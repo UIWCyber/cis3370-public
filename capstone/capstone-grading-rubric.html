@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capstone Grading Rubric - CIS 3370</title>
+<style>
+  :root {
+    --cardinal: #CB333B; --cardinal-dark: #9e262d; --link: #2E8FD6;
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #555; --border: #cccccc;
+    --panel: #f7f7f8; --panel-2: #eef0f2; --input-bg: #ffffff; --input-border: #b7bcc2; --shadow: rgba(0,0,0,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16181c; --fg:#e8eaed; --muted:#a3a8b0; --border:#3a3f47; --panel:#1e2127; --panel-2:#252932; --input-bg:#1b1e24; --input-border:#454b54; --shadow:rgba(0,0,0,0.4); }
+  }
+  :root[data-theme="light"] { --bg:#fff; --fg:#1a1a1a; --muted:#555; --border:#ccc; --panel:#f7f7f8; --panel-2:#eef0f2; --input-bg:#fff; --input-border:#b7bcc2; --shadow:rgba(0,0,0,0.08); }
+  :root[data-theme="dark"] { --bg:#16181c; --fg:#e8eaed; --muted:#a3a8b0; --border:#3a3f47; --panel:#1e2127; --panel-2:#252932; --input-bg:#1b1e24; --input-border:#454b54; --shadow:rgba(0,0,0,0.4); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.55; font-size: 16px; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
+  header.doc { border-top: 6px solid var(--cardinal); padding-top: 1rem; margin-bottom: 1.25rem; }
+  h1 { color: var(--cardinal); font-size: 1.9rem; margin: 0.2rem 0 0.3rem; }
+  h2 { color: var(--cardinal); font-size: 1.25rem; border-bottom: 2px solid var(--border); padding-bottom: 0.3rem; margin-top: 2rem; }
+  .sub { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--cardinal); padding: 0.8rem 1rem; border-radius: 4px; margin: 1rem 0; font-size: 0.95rem; }
+  p.note { color: var(--muted); font-size: 0.92rem; }
+  table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.55rem; text-align: left; vertical-align: top; font-size: 0.92rem; }
+  th { background: var(--panel-2); font-weight: 700; }
+  .field { margin: 0.75rem 0; }
+  .field > label { display: block; font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem; }
+  input[type="text"], textarea { width: 100%; background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; padding: 0.4rem 0.5rem; font: inherit; font-size: 0.92rem; }
+  select { background: var(--input-bg); color: var(--fg); border: 1px solid var(--input-border); border-radius: 4px; padding: 0.35rem 0.4rem; font: inherit; font-size: 0.9rem; width: 100%; }
+  select.unscored { border-color: var(--cardinal); }
+  textarea { resize: vertical; min-height: 3rem; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--cardinal); outline-offset: 1px; border-color: var(--cardinal); }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .sec { border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.1rem; margin: 1.2rem 0; background: var(--panel); }
+  .sec .head { display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+  .sec .head h2 { margin: 0; border: none; padding: 0; flex: 1 1 auto; font-size: 1.2rem; }
+  .sec .weight { background: var(--cardinal); color: #fff; border-radius: 999px; padding: 0.15rem 0.65rem; font-size: 0.82rem; font-weight: 700; white-space: nowrap; }
+  .sec .secscore { font-weight: 800; font-size: 1rem; }
+  .sec .secscore .pts { color: var(--cardinal); }
+  td.critname { width: 46%; }
+  td.critname .cn { font-weight: 700; }
+  td.critname .cd { font-size: 0.85rem; color: var(--muted); margin-top: 0.15rem; }
+  td.w { width: 3.6rem; text-align: center; font-weight: 700; }
+  td.lvl { width: 17rem; }
+  td.earn { width: 5rem; text-align: right; font-weight: 700; }
+  .totalbar { position: sticky; top: 3.1rem; z-index: 40; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1rem; margin: 1rem 0; font-weight: 800; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+  .totalbar .val { color: var(--cardinal); font-size: 1.45rem; }
+  .totalbar .mini { font-weight: 600; font-size: 0.85rem; color: var(--muted); }
+  .btn { background: var(--cardinal); color: #fff; border: none; border-radius: 5px; padding: 0.5rem 0.9rem; font: inherit; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  .btn:hover { background: var(--cardinal-dark); }
+  .btn.secondary { background: transparent; color: var(--fg); border: 1px solid var(--input-border); }
+  .btn.secondary:hover { background: var(--panel-2); }
+  .toolbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0.6rem 1.25rem; box-shadow: 0 2px 6px var(--shadow); }
+  .toolbar .title { font-weight: 700; color: var(--cardinal); margin-right: auto; font-size: 0.95rem; }
+  .deduct { background: var(--panel); border: 1px solid var(--cardinal); border-radius: 6px; padding: 0.7rem 0.9rem; margin: 1rem 0; font-size: 0.92rem; }
+  label.inline { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; }
+  input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--cardinal); }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } .wrap { padding: 1rem 0.8rem 4rem; }
+    td.lvl { width: auto; } td.critname { width: auto; } }
+  @media print {
+    .toolbar, .no-print, button { display: none !important; }
+    body { font-size: 10.5pt; background: #fff; color: #000; }
+    .wrap { max-width: 100%; padding: 0; }
+    :root { --bg:#fff; --fg:#000; --panel:#fff; --panel-2:#f0f0f0; --border:#999; --input-border:#999; }
+    .totalbar { position: static; }
+    .sec { page-break-inside: avoid; }
+    input, textarea, select { border: 1px solid #999 !important; }
+    @page { size: letter; margin: 0.6in; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <span class="title">Capstone Grading Rubric</span>
+  <button class="btn" id="btnPrint">Download PDF</button>
+  <button class="btn secondary" id="btnTheme">Toggle Theme</button>
+  <button class="btn secondary" id="btnClear">Clear Form</button>
+</div>
+<div class="wrap">
+  <header class="doc">
+    <h1>Capstone Grading Rubric</h1>
+    <div class="sub">CIS 3370 Intrusion Detection Systems &nbsp;|&nbsp; Instructor: Dr. Gonzalo D Parra</div>
+  </header>
+
+  <div class="callout">
+    One rubric for the whole capstone (45% of the course grade), one section per graded component:
+    Proposal 2%, Reproduction 15%, Final Presentation 10%, Repository and Board 8%, Wiki Report 10%.
+    Within each section, criteria weights add to 100%. Pick a level for every criterion; the form
+    converts each section score to its course points and totals everything automatically. Levels award
+    0%, 10%, 30%, 60%, 80%, or 100% of a criterion's weight (so a 30% criterion offers 0 / 3 / 9 / 18 / 24 / 30).
+  </div>
+
+  <div class="grid-2">
+    <div class="field"><label for="team">Team name</label><input type="text" id="team" placeholder="team-name"></div>
+    <div class="field"><label for="project">Project title</label><input type="text" id="project" placeholder="project title"></div>
+    <div class="field"><label for="student1">Student 1</label><input type="text" id="student1" placeholder="full name"></div>
+    <div class="field"><label for="student2">Student 2</label><input type="text" id="student2" placeholder="full name"></div>
+    <div class="field"><label for="student3">Student 3</label><input type="text" id="student3" placeholder='full name or "N/A (team of 2)"'></div>
+    <div class="field"><label for="gdate">Date</label><input type="text" id="gdate" placeholder="grading date"></div>
+  </div>
+
+  <div class="totalbar"><span>Total capstone grade</span>
+    <span class="mini" id="secmini"></span>
+    <span><span class="val" id="grandTotal">0.00</span> / 45%</span></div>
+
+  <div id="sections"></div>
+
+  <div class="deduct">
+    <label class="inline"><input type="checkbox" id="deduct-slot"> Missed scheduled presentation slot
+      (automatic 15% deduction from the team's total capstone grade)</label>
+  </div>
+
+  <div class="sec">
+    <div class="head"><h2>Individual grades (contribution-scaled)</h2>
+      <span class="weight">Individual = Team x N x Contribution %, capped per component</span></div>
+    <p class="note">Enter each student's contribution percent from the GitHub record (story points earned
+      divided by the team's total, per the Individual Contribution Summary Table in the README, verified
+      against the board and commit history). Each student's score is the team's component scores scaled by
+      N members times their contribution, capped at each component's maximum: contributing your fair share
+      earns the full team score, doing more cannot exceed the maximums, and contributing nothing earns zero.</p>
+    <table>
+      <thead><tr><th>Student</th><th style="width:11rem">Contribution % (GitHub)</th><th style="width:9rem">Individual score</th></tr></thead>
+      <tbody>
+        <tr><td id="iname1">Student 1</td><td><input type="number" id="contrib1" min="0" max="100" step="1" placeholder="%"></td><td class="earn" id="iscore1">-</td></tr>
+        <tr><td id="iname2">Student 2</td><td><input type="number" id="contrib2" min="0" max="100" step="1" placeholder="%"></td><td class="earn" id="iscore2">-</td></tr>
+        <tr><td id="iname3">Student 3</td><td><input type="number" id="contrib3" min="0" max="100" step="1" placeholder="%"></td><td class="earn" id="iscore3">-</td></tr>
+      </tbody>
+    </table>
+    <p class="note" id="contribWarn" style="display:none; color: var(--cardinal); font-weight: 600;">Contribution percentages of named students do not add up to 100.</p>
+    <p class="note" id="soloWarn" style="display:none; color: var(--cardinal); font-weight: 600;">Exception: only one student is named. Solo capstones are not allowed (teams are 2 to 3); a team reduced to one member must contact the instructor before this grade stands.</p>
+  </div>
+
+  <div class="field"><label for="overall-notes">Overall notes</label>
+    <textarea id="overall-notes" placeholder="summary feedback for the team"></textarea></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "cis3370-capstone-grading:";
+
+  var LEVELS = [
+    ["Missing", 0], ["Unsatisfactory", 0.10], ["Needs Improvement", 0.30],
+    ["Developing", 0.60], ["Satisfactory", 0.80], ["Exceeds Expectations", 1.00]
+  ];
+
+  var SECTIONS = [
+    { id: "prop", title: "1. Paper Selection and Proposal", pts: 2, criteria: [
+      ["Paper and claim", "The paper is named with venue and year, published in the last three years in a high h5-index venue, and the exact claim to be reproduced is stated as a number or a table rather than as a topic.", 40],
+      ["Feasibility evidence", "The team shows the data is already obtainable and loading, and that the method is described in enough detail to rebuild.", 30],
+      ["Team and logistics", "Roster complete, shared weekly working hours agreed, GitHub set up (repo, board, wiki, collaborators), and a recorded unanimous commit-approach vote.", 20],
+      ["Risk and fallback", "The blocker most likely to stop the reproduction is named honestly, with a stated fallback.", 10]
+    ]},
+    { id: "repro", title: "2. Reproduction: Working Pipeline", pts: 15, criteria: [
+      ["Pipeline completeness", "Data, structuring, preprocessing, training and evaluation all run from a clean checkout. A pipeline that only runs on one team member's machine does not qualify.", 35],
+      ["Fidelity to the paper", "Preprocessing, splits, metrics and hyperparameters follow the paper where it states them, and every deliberate deviation is documented and justified.", 30],
+      ["Comparison to published results", "The team's numbers are placed beside the paper's and the gap is quantified, not described.", 25],
+      ["Reproducibility hygiene", "Seeds, library versions and data splits are fixed and recorded, so the result can be repeated by someone else.", 10]
+    ]},
+    { id: "pres", title: "3. Final Presentation", pts: 10, criteria: [
+      ["The comparison", "Leads with the claim and the measured result, so the audience learns what matched and what did not.", 40],
+      ["Method walkthrough", "A clear account of the pipeline actually built and the decisions that shaped it.", 30],
+      ["Professionalism and Q&A", "Practiced and in time, every member speaks, and the team can answer questions about its own numbers.", 30]
+    ]},
+    { id: "repo", title: "4. GitHub Repository and Project Board", pts: 8, criteria: [
+      ["Runs from a clean checkout", "Someone outside the team can clone the repository, follow the README, and reproduce the reported numbers.", 40],
+      ["Contribution is visible", "Commits show who did what, consistent with the declared commit approach. The Individual Contribution Summary Table is required at the bottom of the README: a missing table cannot score above Missing on this criterion.", 30],
+      ["Board reflects the real history", "Issues, sub-tasks and iterations track the semester as it actually happened rather than being filled in at the end.", 30]
+    ]},
+    { id: "wiki", title: "5. GitHub Wiki Reproduction Report", pts: 10, criteria: [
+      ["Claim and result", "The reproduced claim is quoted precisely, and the team's result sits beside it in a table.", 35],
+      ["Method and deviations", "Enough detail for a reader to repeat the work, with every deviation from the paper named.", 35],
+      ["Explanation of the gap", "A reasoned account of why the results diverge and what would be needed to close the gap. A documented negative result earns full marks on this criterion.", 20],
+      ["Structure and navigation", "Sidebar, logical sections, clean headings and working links.", 10]
+    ]}
+  ];
+
+  function fmt(x) { var r = Math.round(x * 10) / 10; return (r % 1 === 0) ? String(r) : r.toFixed(1); }
+
+  var host = document.getElementById("sections");
+  SECTIONS.forEach(function (s) {
+    var div = document.createElement("div");
+    div.className = "sec";
+    var rows = s.criteria.map(function (c, i) {
+      var opts = ['<option value="">Select level</option>'].concat(LEVELS.map(function (L) {
+        return '<option value="' + L[1] + '">' + L[0] + " (" + fmt(L[1] * c[2]) + "%)</option>";
+      })).join("");
+      return '<tr><td class="critname"><div class="cn">' + c[0] + '</div><div class="cd">' + c[1] + '</div></td>' +
+        '<td class="w">' + c[2] + '%</td>' +
+        '<td class="lvl"><select id="' + s.id + "-" + i + '" data-sec="' + s.id + '" data-w="' + c[2] + '">' + opts + "</select></td>" +
+        '<td class="earn" id="earn-' + s.id + "-" + i + '">-</td></tr>';
+    }).join("");
+    div.innerHTML = '<div class="head"><h2>' + s.title + '</h2>' +
+      '<span class="weight">' + s.pts + '% of course grade</span>' +
+      '<span class="secscore">section: <span id="pct-' + s.id + '">0</span>% &rarr; <span class="pts" id="pts-' + s.id + '">0.00</span> / ' + s.pts + '%</span></div>' +
+      '<table><thead><tr><th>Criterion</th><th>Weight</th><th>Level</th><th>Earned</th></tr></thead><tbody>' + rows + "</tbody></table>" +
+      '<div class="field"><label for="notes-' + s.id + '">Section notes</label><textarea id="notes-' + s.id + '" placeholder="evidence and justification"></textarea></div>';
+    host.appendChild(div);
+  });
+
+  function recalc() {
+    var grand = 0, minis = [], secPts = {};
+    SECTIONS.forEach(function (s) {
+      var secPct = 0;
+      s.criteria.forEach(function (c, i) {
+        var sel = document.getElementById(s.id + "-" + i);
+        var frac = sel.value === "" ? 0 : parseFloat(sel.value);
+        sel.classList.toggle("unscored", sel.value === "");
+        var earned = frac * c[2];
+        document.getElementById("earn-" + s.id + "-" + i).textContent = sel.value === "" ? "-" : fmt(earned) + "%";
+        secPct += earned;
+      });
+      var pts = secPct / 100 * s.pts;
+      secPts[s.id] = pts;
+      document.getElementById("pct-" + s.id).textContent = fmt(secPct);
+      document.getElementById("pts-" + s.id).textContent = pts.toFixed(2);
+      minis.push(s.id + " " + pts.toFixed(2));
+      grand += pts;
+    });
+    var deducted = document.getElementById("deduct-slot").checked;
+    var dfac = deducted ? 0.85 : 1;
+    grand *= dfac;
+    document.getElementById("grandTotal").textContent = grand.toFixed(2);
+    document.getElementById("secmini").textContent = minis.join(" | ") +
+      (deducted ? " | missed slot: x0.85" : "");
+
+    // individual grades: Team component x N x contribution, capped per component
+    var students = [1, 2, 3].map(function (n) {
+      return { n: n, name: (document.getElementById("student" + n).value || "").trim(),
+               contrib: parseFloat(document.getElementById("contrib" + n).value) };
+    });
+    var named = students.filter(function (st) { return st.name && !/^n\/?a\b/i.test(st.name); });
+    var N = named.length;
+    var contribSum = 0;
+    students.forEach(function (st) {
+      document.getElementById("iname" + st.n).textContent = st.name || ("Student " + st.n);
+      var out = document.getElementById("iscore" + st.n);
+      if (!st.name || /^n\/?a\b/i.test(st.name) || isNaN(st.contrib) || N === 0) { out.textContent = "-"; return; }
+      contribSum += st.contrib;
+      var ind = 0;
+      SECTIONS.forEach(function (s) {
+        ind += Math.min(secPts[s.id] * dfac * N * (st.contrib / 100), s.pts);
+      });
+      out.textContent = ind.toFixed(2) + " / 45%";
+    });
+    var warn = document.getElementById("contribWarn");
+    var anyScored = named.some(function (st) { return !isNaN(st.contrib); });
+    warn.style.display = (anyScored && Math.abs(contribSum - 100) > 2) ? "" : "none";
+    document.getElementById("soloWarn").style.display = (N === 1) ? "" : "none";
+  }
+
+  // persistence
+  function saveEl(el) {
+    if (!el.id) return;
+    if (el.type === "checkbox") localStorage.setItem(NS + el.id, el.checked ? "1" : "0");
+    else localStorage.setItem(NS + el.id, el.value);
+  }
+  function restore() {
+    document.querySelectorAll("input, textarea, select").forEach(function (el) {
+      if (!el.id) return;
+      var v = localStorage.getItem(NS + el.id);
+      if (v === null) return;
+      if (el.type === "checkbox") el.checked = v === "1"; else el.value = v;
+    });
+  }
+  document.addEventListener("input", function (e) { saveEl(e.target); recalc(); });
+  document.addEventListener("change", function (e) { saveEl(e.target); recalc(); });
+
+  document.getElementById("btnPrint").addEventListener("click", function () { window.print(); });
+  document.getElementById("btnClear").addEventListener("click", function () {
+    if (!confirm("Clear the whole rubric?")) return;
+    Object.keys(localStorage).forEach(function (k) { if (k.indexOf(NS) === 0) localStorage.removeItem(k); });
+    document.querySelectorAll("input[type=text], input[type=number], textarea").forEach(function (el) { el.value = ""; });
+    document.querySelectorAll("select").forEach(function (el) { el.value = ""; });
+    document.getElementById("deduct-slot").checked = false;
+    recalc();
+  });
+  document.getElementById("btnTheme").addEventListener("click", function () {
+    var r = document.documentElement;
+    var cur = r.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    var next = cur === "dark" ? "light" : "dark";
+    r.setAttribute("data-theme", next);
+    try { localStorage.setItem("csec-theme", next); } catch (e) {}
+  });
+  try { var t = localStorage.getItem("csec-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+
+  document.addEventListener("keydown", function (e) {
+    var a = document.activeElement;
+    if (e.key === "p" && !e.ctrlKey && !e.metaKey && !e.altKey &&
+        !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) { e.preventDefault(); window.print(); }
+  });
+
+  restore();
+  recalc();
+})();
+</script>
+</body>
+</html>

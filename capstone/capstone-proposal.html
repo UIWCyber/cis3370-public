@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capstone Proposal - CIS 3370</title>
+<style>
+  :root {
+    --cardinal: #CB333B;
+    --cardinal-dark: #9e262d;
+    --link: #2E8FD6;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #555;
+    --border: #cccccc;
+    --panel: #f7f7f8;
+    --panel-2: #eef0f2;
+    --input-bg: #ffffff;
+    --input-border: #b7bcc2;
+    --shadow: rgba(0,0,0,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c;
+      --fg: #e8eaed;
+      --muted: #a3a8b0;
+      --border: #3a3f47;
+      --panel: #1e2127;
+      --panel-2: #252932;
+      --input-bg: #1b1e24;
+      --input-border: #454b54;
+      --shadow: rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #555; --border: #cccccc;
+    --panel: #f7f7f8; --panel-2: #eef0f2; --input-bg: #ffffff; --input-border: #b7bcc2; --shadow: rgba(0,0,0,0.08);
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181c; --fg: #e8eaed; --muted: #a3a8b0; --border: #3a3f47;
+    --panel: #1e2127; --panel-2: #252932; --input-bg: #1b1e24; --input-border: #454b54; --shadow: rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 5rem; }
+  header.doc { border-top: 6px solid var(--cardinal); padding-top: 1rem; margin-bottom: 1.5rem; }
+  h1 { color: var(--cardinal); font-size: 1.9rem; margin: 0.2rem 0 0.3rem; }
+  h2 { color: var(--cardinal); font-size: 1.3rem; border-bottom: 2px solid var(--border); padding-bottom: 0.3rem; margin-top: 2.2rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.4rem; }
+  .sub { color: var(--muted); font-weight: 600; font-size: 0.95rem; }
+  .callout { background: var(--panel); border-left: 4px solid var(--cardinal); padding: 0.8rem 1rem; border-radius: 4px; margin: 1rem 0; color: var(--fg); font-size: 0.95rem; }
+  p.note { color: var(--muted); font-size: 0.92rem; }
+  table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.55rem; text-align: left; vertical-align: top; font-size: 0.93rem; }
+  th { background: var(--panel-2); font-weight: 700; }
+  input[type="text"], input[type="email"], input[type="url"], input[type="number"], textarea, select {
+    width: 100%; background: var(--input-bg); color: var(--fg);
+    border: 1px solid var(--input-border); border-radius: 4px; padding: 0.4rem 0.5rem;
+    font: inherit; font-size: 0.92rem;
+  }
+  textarea { resize: vertical; min-height: 3.4rem; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--cardinal); outline-offset: 1px; border-color: var(--cardinal); }
+  label.inline { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.9rem; }
+  input[type="checkbox"], input[type="radio"] { width: 1.05rem; height: 1.05rem; accent-color: var(--cardinal); }
+  .field { margin: 0.75rem 0; }
+  .field > label { display: block; font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .avail th, .avail td { text-align: center; }
+  .avail td label { display: flex; justify-content: center; }
+  .btn { background: var(--cardinal); color: #fff; border: none; border-radius: 5px; padding: 0.5rem 0.9rem; font: inherit; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  .btn:hover { background: var(--cardinal-dark); }
+  .btn.secondary { background: transparent; color: var(--fg); border: 1px solid var(--input-border); }
+  .btn.secondary:hover { background: var(--panel-2); }
+  .addrow { margin-top: 0.4rem; }
+  .toolbar {
+    position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    background: var(--panel); border-bottom: 1px solid var(--border); padding: 0.6rem 1.25rem; box-shadow: 0 2px 6px var(--shadow);
+  }
+  .toolbar .title { font-weight: 700; color: var(--cardinal); margin-right: auto; font-size: 0.95rem; }
+  .sig-line { border-bottom: 1px solid var(--fg); min-width: 260px; display: inline-block; }
+  .print-only { display: none; }
+  .hint { color: var(--muted); font-size: 0.82rem; font-weight: 400; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } .wrap { padding: 1rem 0.8rem 4rem; } table { font-size: 0.8rem; } }
+  @media print {
+    .toolbar, .no-print, .addrow, button { display: none !important; }
+    body { font-size: 11pt; background: #fff; color: #000; }
+    .wrap { max-width: 100%; padding: 0; }
+    :root { --bg:#fff; --fg:#000; --panel:#fff; --panel-2:#f0f0f0; --input-bg:#fff; --border:#999; --input-border:#999; }
+    h2 { page-break-after: avoid; }
+    table, tr, td, th { page-break-inside: avoid; }
+    input, textarea, select { border: 1px solid #999 !important; }
+    @page { size: letter; margin: 0.6in; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <span class="title">Capstone Proposal</span>
+  <button class="btn" id="btnPrint">Download PDF</button>
+  <button class="btn secondary" id="btnTheme">Toggle Theme</button>
+  <button class="btn secondary" id="btnClear">Clear Form</button>
+</div>
+<div class="wrap">
+  <header class="doc">
+    <h1>Capstone Proposal</h1>
+    <div class="sub">CIS 3370 Intrusion Detection Systems &nbsp;|&nbsp; Instructor: Dr. Gonzalo D Parra</div>
+  </header>
+
+  <div class="callout">
+    Complete every section and submit through the Capstone Proposal assignment on Canvas. The proposal is worth 2% of your course grade and is <strong>required before you start building</strong>. The instructor must approve this proposal before your team begins building. No late work is accepted: a proposal submitted after the deadline scores zero.
+  </div>
+
+  <h2>1. Team Roster</h2>
+  <p class="note">Teams are <strong>2 to 3 students</strong>. No solo capstones. For the Personality column, every member takes the free test at <a href="https://www.16personalities.com/" target="_blank" rel="noopener">16personalities.com</a> and enters their 4-letter type; read your teammates' portraits at <a href="https://personalitypage.com/html/portraits.html" target="_blank" rel="noopener">personalitypage.com/html/portraits.html</a> to understand how each of you works best.</p>
+  <table>
+    <thead><tr><th style="width:2.5rem">#</th><th>Name</th><th>UIW Email</th><th>GitHub Username</th><th style="width:7.5rem">Personality (4-letter)</th></tr></thead>
+    <tbody>
+      <tr><td>1</td>
+        <td><input type="text" id="member1-name" placeholder="Full name"></td>
+        <td><input type="email" id="member1-email" placeholder="name@student.uiwtx.edu"></td>
+        <td><input type="text" id="member1-github" placeholder="github username"></td>
+        <td><input type="text" id="member1-personality" placeholder="e.g., INTJ" maxlength="6"></td></tr>
+      <tr><td>2</td>
+        <td><input type="text" id="member2-name" placeholder="Full name"></td>
+        <td><input type="email" id="member2-email" placeholder="name@student.uiwtx.edu"></td>
+        <td><input type="text" id="member2-github" placeholder="github username"></td>
+        <td><input type="text" id="member2-personality" placeholder="e.g., ENFP" maxlength="6"></td></tr>
+      <tr><td>3</td>
+        <td><input type="text" id="member3-name" placeholder='Name or "N/A (team of 2)"'></td>
+        <td><input type="email" id="member3-email" placeholder="optional"></td>
+        <td><input type="text" id="member3-github" placeholder="optional"></td>
+        <td><input type="text" id="member3-personality" placeholder="optional" maxlength="6"></td></tr>
+    </tbody>
+  </table>
+  <div class="field">
+    <label for="team-name">Team name (used for the repo)</label>
+    <input type="text" id="team-name" placeholder="team-name">
+  </div>
+  <div class="field">
+    <label for="agreed-meeting">Agreed weekly meeting time(s)</label>
+    <input type="text" id="agreed-meeting" placeholder="recurring block(s) every member can attend, from the Team Formation availability grid">
+  </div>
+  <p class="note">Work out shared availability on the <strong>Capstone Team Formation</strong> form (it has the full availability grid) before filling this in.</p>
+
+  <h3>Commit Approach (team vote, unanimous)</h3>
+  <p class="note">Your repository is the record of your effort. Vote as a team on how commits are managed; the choice is binding for the semester. If the vote is not unanimous, the team defaults to Individual Commits.</p>
+  <label class="inline"><input type="radio" name="commit-approach" id="commit-individual" value="individual"> <strong>Individual Commits</strong>: every member pushes their own work; points follow the committer.</label><br>
+  <label class="inline"><input type="radio" name="commit-approach" id="commit-delegated" value="delegated"> <strong>Delegated Commits</strong>: designated member(s) push on behalf of the team; points follow the board assignee.</label>
+  <div class="field" style="margin-top:.5rem">
+    <label for="commit-vote">Vote result</label>
+    <input type="text" id="commit-vote" placeholder='e.g., "3-0 unanimous for Individual Commits"'>
+  </div>
+
+  <h2>2. GitHub Setup</h2>
+  <table>
+    <tbody>
+      <tr><th style="width:40%">Repository URL</th><td><input type="url" id="repo-url" placeholder="https://github.com/..."></td></tr>
+      <tr><th>GitHub Project board URL</th><td><input type="url" id="board-url" placeholder="https://github.com/.../projects/..."></td></tr>
+      <tr><th>Collaborators added</th><td>
+        <label class="inline"><input type="checkbox" id="collab-gdparra"> <code>gdparra-edu</code></label> &nbsp;&nbsp;
+        <label class="inline"><input type="checkbox" id="collab-cyberknowledge"> <code>cyberknowledge</code></label>
+      </td></tr>
+      <tr><th>Wiki enabled (final report lives here)</th><td>
+        <label class="inline"><input type="checkbox" id="wiki-enabled"> Yes</label>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <h2>3. The Paper and the Claim</h2>
+  <p class="note">Name the paper you will reproduce and state, precisely, the result you are going to try to obtain. A topic is not a claim. A number or a table is.</p>
+  <div class="field">
+    <label for="paper-title">Paper title</label>
+    <input type="text" id="paper-title" placeholder="full title as published">
+  </div>
+  <div class="field">
+    <label for="paper-venue">Venue and year</label>
+    <input type="text" id="paper-venue" placeholder="conference or journal, and year of publication (last three years)">
+  </div>
+  <div class="field">
+    <label for="paper-link">Link or DOI</label>
+    <input type="text" id="paper-link" placeholder="a link the instructor can open">
+  </div>
+  <div class="field">
+    <label for="paper-claim">The exact claim you will reproduce</label>
+    <textarea id="paper-claim" placeholder="Quote it. For example: 'the model reaches 0.94 F1 on the X test split, Table 3, row 2'. Name the table or figure it comes from."></textarea>
+  </div>
+
+  <h2>4. Feasibility Check</h2>
+  <p class="note">Four questions decide whether this paper can be reproduced at all: can you get the <strong>data</strong>, is the <strong>method</strong> described in enough detail to rebuild, are the <strong>metrics</strong> defined precisely enough to recompute, and does the <strong>compute</strong> fit the hardware and time you have? Add one row per question with the evidence for your answer.</p>
+  <table>
+    <thead><tr><th style="width:34%">Requirement</th><th>Evidence that you can meet it</th><th class="no-print" style="width:2.5rem"></th></tr></thead>
+    <tbody id="modulesBody"></tbody>
+  </table>
+  <button class="btn secondary addrow" id="addModule">+ Add row</button>
+
+  <h2>5. Data Plan</h2>
+  <p class="note">Where the data comes from and what state it is in. You must already be able to load it before this proposal is approved.</p>
+  <div class="field">
+    <label for="data-plan">Dataset and access</label>
+    <textarea id="data-plan" placeholder="Which dataset, where it is hosted, its licence, its size, whether it is time-series, and what you have already loaded"></textarea>
+  </div>
+  <label class="inline"><input type="checkbox" id="data-loaded"> The data is already loading in our repository</label>
+
+  <h2>6. Reproduction Plan</h2>
+  <p class="note">The pipeline you will rebuild, stage by stage, and where you expect the paper to be underspecified.</p>
+  <div class="field">
+    <label for="repro-plan">Method and pipeline</label>
+    <textarea id="repro-plan" placeholder="Structuring, preprocessing, the model and its hyperparameters, the training setup, and which details the paper leaves out that you will have to choose yourself"></textarea>
+  </div>
+
+  <h2>7. Evaluation and Comparison Plan</h2>
+  <p class="note">How you will decide whether you reproduced the claim. Agree this before you have results, so the answer is not chosen to suit them.</p>
+  <div class="field">
+    <label for="eval-plan">Metrics, splits, and the comparison</label>
+    <textarea id="eval-plan" placeholder="The exact metrics and splits, how you will present your numbers beside the paper's, and what size of gap you would consider a failed reproduction"></textarea>
+  </div>
+
+  <h2>8. Resources Required</h2>
+  <p class="note">List what you need to run the reproduction.</p>
+  <div class="field">
+    <label for="resources">Resources</label>
+    <textarea id="resources" placeholder="Compute (GPU or CPU), storage, libraries and versions, dataset access, and where each will run"></textarea>
+  </div>
+
+  <h2>9. Milestone and Sprint Plan</h2>
+  <p class="note">Fill in what your team will have DONE by each milestone.</p>
+  <div class="field">
+    <label for="ms-1">Milestone 1: Proposal approved and repo, board, and wiki live</label>
+    <textarea id="ms-1" placeholder="This document approved; repo, board, and wiki created; collaborators added"></textarea>
+  </div>
+  <div class="field">
+    <label for="ms-2">Milestone 2: Environment built and threat demonstrated</label>
+    <textarea id="ms-2" placeholder="e.g., VMs and networks built; attack demonstrated against the undefended environment with evidence captured"></textarea>
+  </div>
+  <div class="field">
+    <label for="ms-3">Milestone 3: Defenses implemented and verified</label>
+    <textarea id="ms-3" placeholder="e.g., controls implemented; attack re-run and shown blocked; effectiveness verified"></textarea>
+  </div>
+  <div class="field">
+    <label for="ms-4">Milestone 4: Documentation and presentation</label>
+    <textarea id="ms-4" placeholder="e.g., wiki final report complete; README with Contribution Summary Table; presentation dry-run done; demo fallback recorded"></textarea>
+  </div>
+  <label class="inline"><input type="checkbox" id="sprint1-planned"> Sprint 1 fully planned with user stories and tasks on the board</label>
+
+  <h2>10. Risks and Assumptions</h2>
+  <p class="note">List what could derail the project and what you assume to be true. Be honest; this section seeds the risk register you will keep in the wiki.</p>
+  <table>
+    <thead><tr><th style="width:2.2rem">#</th><th>Risk or Assumption</th><th style="width:5rem">Likelihood</th><th style="width:5rem">Impact</th><th>Mitigation or Fallback</th><th class="no-print" style="width:2.5rem"></th></tr></thead>
+    <tbody id="risksBody"></tbody>
+  </table>
+  <button class="btn secondary addrow" id="addRisk">+ Add risk row</button>
+
+  <h2>11. Questions for the Instructor</h2>
+  <p class="note">List anything you need clarified before or during the build. Also document these on a wiki page so the team can track answers.</p>
+  <div class="field">
+    <label for="questions">Questions</label>
+    <textarea id="questions" placeholder="Open questions about scope, tools, environment, or grading"></textarea>
+  </div>
+
+  <h2>12. Approval</h2>
+  <p class="note">By submitting, every team member affirms they reviewed this proposal, agreed on the weekly meeting time(s) and commit approach above, and commit to the milestone plan.</p>
+  <table>
+    <thead><tr><th>Team member (typed name)</th><th style="width:30%">Date signed</th></tr></thead>
+    <tbody>
+      <tr><td><input type="text" id="sign1-name" placeholder="Member 1 typed name"></td><td><input type="text" id="sign1-date" placeholder="signing date"></td></tr>
+      <tr><td><input type="text" id="sign2-name" placeholder="Member 2 typed name"></td><td><input type="text" id="sign2-date" placeholder="signing date"></td></tr>
+      <tr><td><input type="text" id="sign3-name" placeholder='Member 3 name or "N/A (team of 2)"'></td><td><input type="text" id="sign3-date" placeholder="signing date"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="field">
+    <label for="instructor-approval">Instructor approval (Dr. Gonzalo D Parra)</label>
+    <input type="text" id="instructor-approval" placeholder="Instructor signature">
+  </div>
+  <div class="field">
+    <label for="approval-conditions">Approval conditions or required changes (instructor use)</label>
+    <textarea id="approval-conditions" placeholder=""></textarea>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "cis3370-capstone-proposal:";
+
+  // Module rows
+  var modulesBody = document.getElementById("modulesBody");
+  function makeModuleRow(i) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td><input type="text" id="module-' + i + '-name" placeholder="e.g., Module 4 - Endpoint Security"></td>' +
+      '<td><input type="text" id="module-' + i + '-connect" placeholder="how this module connects to your project"></td>' +
+      '<td class="no-print"><button class="btn secondary" data-remove="module" data-idx="' + i + '" title="Remove row">&times;</button></td>';
+    return tr;
+  }
+
+  // Risk rows
+  var risksBody = document.getElementById("risksBody");
+  function makeRiskRow(i) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td>' + (i + 1) + '</td>' +
+      '<td><input type="text" id="risk-' + i + '-desc" placeholder="e.g., host machine lacks RAM to run all the VMs"></td>' +
+      '<td><select id="risk-' + i + '-likelihood"><option value="">--</option><option>L</option><option>M</option><option>H</option></select></td>' +
+      '<td><select id="risk-' + i + '-impact"><option value="">--</option><option>L</option><option>M</option><option>H</option></select></td>' +
+      '<td><input type="text" id="risk-' + i + '-mitigation" placeholder="e.g., reduce VM count or use lighter images"></td>' +
+      '<td class="no-print"><button class="btn secondary" data-remove="risk" data-idx="' + i + '" title="Remove row">&times;</button></td>';
+    return tr;
+  }
+
+  // ---- generic persistence ----
+  function saveEl(el) {
+    if (!el.id && !(el.type === "radio" && el.name)) return;
+    if (el.type === "checkbox") {
+      localStorage.setItem(NS + el.id, el.checked ? "1" : "0");
+    } else if (el.type === "radio") {
+      if (el.checked) localStorage.setItem(NS + "radio:" + el.name, el.value);
+    } else {
+      localStorage.setItem(NS + el.id, el.value);
+    }
+  }
+  function restoreAll() {
+    var els = document.querySelectorAll("input, textarea, select");
+    els.forEach(function (el) {
+      if (el.type === "checkbox") {
+        var v = localStorage.getItem(NS + el.id);
+        if (v !== null) el.checked = v === "1";
+      } else if (el.type === "radio") {
+        var rv = localStorage.getItem(NS + "radio:" + el.name);
+        if (rv !== null) el.checked = el.value === rv;
+      } else if (el.id) {
+        var val = localStorage.getItem(NS + el.id);
+        if (val !== null) el.value = val;
+      }
+    });
+  }
+
+  // counts for dynamic tables
+  var MOD_COUNT_KEY = NS + "meta:moduleCount";
+  var RISK_COUNT_KEY = NS + "meta:riskCount";
+  function renderModules(n) {
+    modulesBody.innerHTML = "";
+    for (var i = 0; i < n; i++) modulesBody.appendChild(makeModuleRow(i));
+  }
+  function renderRisks(n) {
+    risksBody.innerHTML = "";
+    for (var i = 0; i < n; i++) risksBody.appendChild(makeRiskRow(i));
+  }
+  var moduleCount = parseInt(localStorage.getItem(MOD_COUNT_KEY) || "3", 10);
+  if (isNaN(moduleCount) || moduleCount < 1) moduleCount = 3;
+  var riskCount = parseInt(localStorage.getItem(RISK_COUNT_KEY) || "3", 10);
+  if (isNaN(riskCount) || riskCount < 1) riskCount = 3;
+  renderModules(moduleCount);
+  renderRisks(riskCount);
+
+  restoreAll();
+
+  // delegated save
+  document.addEventListener("input", function (e) { saveEl(e.target); });
+  document.addEventListener("change", function (e) { saveEl(e.target); });
+
+  // add rows
+  document.getElementById("addModule").addEventListener("click", function () {
+    modulesBody.appendChild(makeModuleRow(moduleCount));
+    moduleCount++;
+    localStorage.setItem(MOD_COUNT_KEY, String(moduleCount));
+  });
+  document.getElementById("addRisk").addEventListener("click", function () {
+    risksBody.appendChild(makeRiskRow(riskCount));
+    riskCount++;
+    localStorage.setItem(RISK_COUNT_KEY, String(riskCount));
+  });
+
+  // remove row (clears that row's stored keys but keeps count/ids stable)
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-remove]");
+    if (!btn) return;
+    var row = btn.closest("tr");
+    row.querySelectorAll("input, select, textarea").forEach(function (el) {
+      if (el.id) localStorage.removeItem(NS + el.id);
+    });
+    row.remove();
+  });
+
+  // toolbar
+  document.getElementById("btnPrint").addEventListener("click", function () { window.print(); });
+  document.getElementById("btnClear").addEventListener("click", function () {
+    if (!confirm("Clear this form and erase its saved data on this device? This cannot be undone.")) return;
+    var keys = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf(NS) === 0) keys.push(k);
+    }
+    keys.forEach(function (k) { localStorage.removeItem(k); });
+    location.reload();
+  });
+
+  // theme toggle
+  var THEME_KEY = "csec-theme";
+  var savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+  document.getElementById("btnTheme").addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme");
+    var isDark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = isDark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem(THEME_KEY, next);
+  });
+
+  // "p" to print when not typing
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target;
+    var typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
+    if (!typing && (e.key === "p" || e.key === "P")) {
+      e.preventDefault();
+      window.print();
+    }
+  });
+})();
+</script>
+</body>
+</html>
