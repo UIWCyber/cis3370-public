@@ -400,7 +400,7 @@ footer .links a{font-weight:600}
         <h3>Tools and data</h3>
         <ul>
           <li><strong>Text first:</strong> <code>awk</code>, <code>sed</code>, regular expressions. A log line is text before it is anything else.</li>
-          <li><strong>Dataset:</strong> NSL-KDD, held fixed all semester so results stay comparable.</li>
+          <li><strong>Datasets:</strong> NSL-KDD first, because it is small and well understood. It is not time-series, so we move to a second dataset with real ordering before the reproduction work begins.</li>
           <li><strong>Models:</strong> classical baselines, LSTMs, transformers, parameter-efficient tuning of language models, and reinforcement learning for response.</li>
           <li><strong>Everything in Python</strong>, in a repository, reproducible by someone who is not you.</li>
         </ul>
@@ -449,9 +449,9 @@ footer .links a{font-weight:600}
       <div class="pol">
         <h3>Late work</h3>
         <ul>
-          <li><strong>Assignments and the capstone proposal</strong> lose <strong>15% per calendar day</strong>. The lowest possible grade for a submission is 0%.</li>
-          <li><strong>Capstone final deliverables are not accepted late:</strong> the Wiki report, the repository, the project board and the presentation. Missing the deadline is a zero for that component.</li>
-          <li>Documented emergency? Contact Dr. Parra <strong>before</strong> the deadline.</li>
+          <li><strong>No late work is accepted.</strong> Every deliverable, assignments and capstone components alike, is due at the stated time. After that the grade for that item is zero.</li>
+          <li>This includes the <strong>capstone final deliverables</strong>: the Wiki reproduction report, the repository, the project board and the presentation.</li>
+          <li>Documented emergency? Contact Dr. Parra <strong>before</strong> the deadline. Accommodations are arranged in advance, not afterwards.</li>
         </ul>
       </div>
       <div class="pol">
@@ -501,15 +501,15 @@ var SESSIONS = [
   {wk:3  date:"2026-09-10", day:"Thu", topic:"Stage 2: data collection, agents and shipping", note:"", tags:["lecture"]},
   {wk:4  date:"2026-09-15", day:"Tue", topic:"Stage 3: structuring, from text to fields", note:"", tags:["lecture"]},
   {wk:4  date:"2026-09-17", day:"Thu", topic:"Storage and query: getting answers back out", note:"Capstone paper selection due", tags:["lecture", "capstone"]},
-  {wk:5  date:"2026-09-22", day:"Tue", topic:"NSL-KDD: what is in it and what is wrong with it", note:"", tags:["lecture"]},
+  {wk:5  date:"2026-09-22", day:"Tue", topic:"NSL-KDD: what is in it, and why it is not time-series", note:"", tags:["lecture"]},
   {wk:5  date:"2026-09-24", day:"Thu", topic:"Feature engineering for intrusion data", note:"", tags:["lecture"]},
   {wk:6  date:"2026-09-29", day:"Tue", topic:"Stage 4: preprocessing, encoding, scaling, imbalance", note:"", tags:["lecture"]},
   {wk:6  date:"2026-10-01", day:"Thu", topic:"Classical baselines you have to beat", note:"", tags:["lecture"]},
   {wk:7  date:"2026-10-06", day:"Tue", topic:"Evaluation: the metrics that matter for detection", note:"", tags:["lecture"]},
-  {wk:7  date:"2026-10-08", day:"Thu", topic:"Sequence models: LSTMs on ordered events", note:"", tags:["lecture"]},
-  {wk:8  date:"2026-10-13", day:"Tue", topic:"Transformers for log and packet data", note:"", tags:["lecture"]},
+  {wk:7  date:"2026-10-08", day:"Thu", topic:"From tabular to time-series: the second dataset", note:"Ordering, windows, leakage", tags:["lecture"]},
+  {wk:8  date:"2026-10-13", day:"Tue", topic:"Sequence models: LSTMs on the time-series set", note:"", tags:["lecture"]},
   {wk:8  date:"2026-10-15", day:"Thu", topic:"No class", note:"Fall Break (confirm against the academic calendar)", tags:["noclass"]},
-  {wk:9  date:"2026-10-20", day:"Tue", topic:"PEFT: tuning language models on log text", note:"", tags:["lecture"]},
+  {wk:9  date:"2026-10-20", day:"Tue", topic:"Transformers and PEFT on log sequences", note:"", tags:["lecture"]},
   {wk:9  date:"2026-10-22", day:"Thu", topic:"Capstone progress presentations, day 1", note:"Feedback session", tags:["capstone"]},
   {wk:10 date:"2026-10-27", day:"Tue", topic:"Capstone progress presentations, day 2", note:"Feedback session", tags:["capstone"]},
   {wk:10 date:"2026-10-29", day:"Thu", topic:"Reinforcement learning for response selection", note:"", tags:["lecture"]},
