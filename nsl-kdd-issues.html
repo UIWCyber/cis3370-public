@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSL-KDD: What Is Wrong With This Dataset - CIS 3370</title>
+<style>
+:root{--red:#CB333B;--red-dark:#A32830;--bg:#f7f7f9;--surface:#fff;--surface-2:#f1f1f4;
+ --text:#1c1e22;--muted:#5b616b;--line:#e2e3e8;--amb:#8a5a00;--amb-bg:#fdf6e7;--ok:#1a7f4e;
+ --shadow:0 1px 3px rgba(20,22,26,.07),0 8px 24px rgba(20,22,26,.06)}
+:root[data-theme="dark"]{--bg:#16181c;--surface:#1f2228;--surface-2:#262a31;--text:#f2f3f5;
+ --muted:#a8aeb8;--line:#333842;--amb:#f0c476;--amb-bg:#2a2313;--ok:#6ee7a8;--red:#e8626c;--red-dark:#cb333b}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181c;--surface:#1f2228;
+ --surface-2:#262a31;--text:#f2f3f5;--muted:#a8aeb8;--line:#333842;--amb:#f0c476;--amb-bg:#2a2313;
+ --ok:#6ee7a8;--red:#e8626c;--red-dark:#cb333b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+ font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 1.2rem}
+header.hero{background:var(--red);color:#fff;padding:2.2rem 0 1.8rem}
+header.hero h1{margin:.2rem 0 .4rem;font-size:2rem;line-height:1.15}
+header.hero p{margin:0;max-width:70ch;opacity:.95}
+.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;font-weight:700;opacity:.9;margin:0}
+.flow{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.flow span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+ padding:.3rem .7rem;border-radius:999px;font-size:.85rem;font-weight:600}
+main{padding:1.6rem 0 3rem}
+h2{font-size:1.3rem;margin:0 0 .8rem;line-height:1.25}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+ padding:1.1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:1.2rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.new{color:var(--red);font-weight:600}
+.grid3{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:1.2rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--red);
+ border-radius:10px;padding:.8rem 1rem;box-shadow:var(--shadow)}
+.stat .k{font-size:1.6rem;font-weight:800;line-height:1.1}
+.stat .l{color:var(--muted);font-size:.86rem;margin-top:.2rem}
+section.issue{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+ padding:1.1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:1.1rem}
+section.issue h2{display:flex;align-items:center;gap:.6rem}
+.num{display:inline-flex;align-items:center;justify-content:center;min-width:1.9rem;height:1.9rem;
+ border-radius:8px;background:var(--red);color:#fff;font-size:.95rem;font-weight:800;flex:0 0 auto}
+.steps{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.step{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:.7rem .85rem}
+.step h3{margin:0 0 .35rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.step p{margin:0;font-size:.93rem}
+.step.issue-b{background:var(--amb-bg);border-color:var(--amb)}
+.step.issue-b h3{color:var(--amb)}
+.step.sol{border-left:5px solid var(--ok)}
+code{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+ padding:.05rem .3rem;font-size:.88em}
+.note{color:var(--muted);font-size:.9rem}
+.theme-fab{position:fixed;right:1rem;bottom:1rem;background:var(--surface);color:var(--text);
+ border:1px solid var(--line);border-radius:999px;padding:.5rem .9rem;cursor:pointer;
+ box-shadow:var(--shadow);font-size:.85rem;font-weight:600}
+@media print{
+ :root{--bg:#fff;--surface:#fff;--surface-2:#f4f4f6;--text:#111;--line:#bbb}
+ .theme-fab{display:none}header.hero{background:#fff;color:#111;border-bottom:3px solid var(--red)}
+ section.issue,.panel,.stat{break-inside:avoid;box-shadow:none}
+ body{font-size:11pt}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CIS 3370 &middot; Intrusion Detection Systems</p>
+    <h1>NSL-KDD: what is wrong with this dataset</h1>
+    <p>Before we train anything, we look at the data and write down what is broken. Every number on this
+    page was computed from <code>KDDTrain+</code> and <code>KDDTest+</code> themselves, not quoted from a
+    paper. Work through each issue in the same four steps.</p>
+    <div class="flow"><span>1. Analysis</span><span>2. Issue detected</span><span>3. Tools available</span><span>4. Solution</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="grid3">
+    <div class="stat"><div class="k">125,973</div><div class="l">training rows</div></div>
+    <div class="stat"><div class="k">22,544</div><div class="l">test rows</div></div>
+    <div class="stat"><div class="k">44</div><div class="l">columns, of which 3 are labels</div></div>
+    <div class="stat"><div class="k">16.6%</div><div class="l">of test rows are attack types never seen in training</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Where we started: class and family</h2>
+    <p class="note">Every row is either <b>normal</b> or an <b>anomaly</b>. Each anomaly belongs to one of four
+    families, and each family contains several named attack types. The question that matters is the last
+    column: which attack types exist in the test set that we never trained on?</p>
+    <table>
+      <thead><tr><th>Family</th><th class="n">Train+</th><th class="n">share</th><th class="n">Test+</th>
+      <th class="n">share</th><th class="n">types shared</th><th>attack types only in Test+</th></tr></thead>
+      <tbody>
+<tr><td><b>Normal</b></td><td class=n>67,343</td><td class=n>53.5%</td><td class=n>9,711</td><td class=n>43.1%</td><td class=n>1 of 1</td><td class=new>none</td></tr>
+<tr><td><b>DoS</b></td><td class=n>45,927</td><td class=n>36.5%</td><td class=n>7,460</td><td class=n>33.1%</td><td class=n>6 of 11</td><td class=new>apache2, mailbomb, processtable, udpstorm, worm</td></tr>
+<tr><td><b>Probe</b></td><td class=n>11,656</td><td class=n>9.3%</td><td class=n>2,421</td><td class=n>10.7%</td><td class=n>4 of 6</td><td class=new>mscan, saint</td></tr>
+<tr><td><b>R2L</b></td><td class=n>995</td><td class=n>0.8%</td><td class=n>2,885</td><td class=n>12.8%</td><td class=n>6 of 13</td><td class=new>httptunnel, named, sendmail, snmpgetattack, snmpguess, xlock, xsnoop</td></tr>
+<tr><td><b>U2R</b></td><td class=n>52</td><td class=n>0.0%</td><td class=n>67</td><td class=n>0.3%</td><td class=n>4 of 7</td><td class=new>ps, sqlattack, xterm</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:.7rem">Read the R2L row twice. It is under one percent of training and
+    almost thirteen percent of test, and more than half of its test attack types were never trained on.</p>
+  </div>
+
+
+<section class="issue">
+  <h2><span class="num">1</span>The test set contains attacks the training set never shows</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p>Counted the distinct values of <code>Class</code> in each file and compared the two sets. Training has <b>22</b> attack types. Test has <b>37</b>. <b>17 of them appear only in test</b>, covering <b>3,750 test rows (16.6% of the test set)</b>.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>A model can only learn patterns it has seen. One test row in six belongs to an attack type that was absent from training, so no amount of tuning will teach the model those rows. This is deliberate in NSL-KDD: it simulates tomorrow's attacks.</p></div>
+    <div class="step"><h3>Tools available</h3><p>Set comparison on the label column. A frequency table per file. No statistics needed yet, only careful counting.</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Report two accuracies: one on the attacks the model was trained on, one on the unseen ones. Never quote a single overall number without saying which. If the goal is catching novel attacks, an anomaly detector trained only on normal traffic is the honest design, not a classifier.</p></div>
+  </div>
+</section>
+
+<section class="issue">
+  <h2><span class="num">2</span>Train and test do not have the same shape</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p>Compared each family's share of its file. <b>R2L</b> is <b>0.8%</b> of training but <b>12.8%</b> of test, roughly a sixteenfold shift. <b>U2R</b> moves from 0.0% to 0.3%.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>The test set is not a random sample of the training set. A model tuned to do well on the training mix is being graded on a different mix, so cross-validation scores on the training file will look far better than test performance. That gap is the dataset's design, not your mistake.</p></div>
+    <div class="step"><h3>Tools available</h3><p>Two-proportion comparison, or a chi-square goodness-of-fit test between the observed test counts and the proportions expected from training. The <b>p-value</b> answers one question: if the two files really came from the same population, how surprising is a difference this large? A very small p-value means "this gap is not luck."</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Split a validation set from the training file for tuning, then treat <code>KDDTest+</code> as a final exam you look at once. Expect the drop and explain it, rather than tuning until the test number improves, which is how people quietly overfit the test set.</p></div>
+  </div>
+</section>
+
+<section class="issue">
+  <h2><span class="num">3</span>One class is almost absent</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p>U2R has <b>52 rows in 125,973</b> training rows, which is 0.0%. The largest class, normal, has 67,343.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>Accuracy becomes meaningless. Predicting <b>normal</b> for every test row scores <b>43.1%</b> without a model at all. A classifier can ignore U2R entirely and still look excellent.</p></div>
+    <div class="step"><h3>Tools available</h3><p>The majority-class baseline, which is the number every model must beat. A confusion matrix. Precision, recall and F1 per class. For imbalance, precision-recall curves are more honest than ROC.</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Report per-class recall, not overall accuracy. Use stratified splits so rare classes appear in every fold, and class weights so errors on U2R cost more than errors on normal. Resampling such as SMOTE is an option, but on 52 real examples it invents most of what it trains on, so treat it with suspicion.</p></div>
+  </div>
+</section>
+
+<section class="issue">
+  <h2><span class="num">4</span>A column that says nothing</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p>Checked every feature for how many distinct values it takes. <code>Num_Outbound_Commands</code> is <b>0 in all 125,973 training rows</b>.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>A column with no variation cannot separate anything. It costs memory, adds a term to every model, and breaks correlation calculations because dividing by a zero standard deviation is undefined.</p></div>
+    <div class="step"><h3>Tools available</h3><p>Variance of each column, or simply a count of distinct values. This is the cheapest check in the whole pipeline.</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Drop zero-variance columns before anything else, and record that you dropped them. If you drop it from training you must drop it from test as well, using the training file to decide.</p></div>
+  </div>
+</section>
+
+<section class="issue">
+  <h2><span class="num">5</span>Numbers on wildly different scales</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p><code>Src_Bytes</code> has median <b>44</b>, 99th percentile <b>54,540</b>, and maximum <b>1,379,963,888</b>. The largest value is about <b>31 million times</b> the median.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>Any method that measures distance, and any model that sums weighted inputs, is dominated by whichever column happens to be biggest. Half the rows sit near zero while a few sit near a billion.</p></div>
+    <div class="step"><h3>Tools available</h3><p>Five-number summary and percentiles. Boxplots. The IQR rule for flagging outliers. A histogram before and after a transform.</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Apply a log transform such as <code>log(1 + x)</code> to the byte and duration columns, which compresses the tail without discarding rows, then standardize. Fit the transform on training data only and apply the same fitted transform to test, otherwise information from the test set leaks into training.</p></div>
+  </div>
+</section>
+
+<section class="issue">
+  <h2><span class="num">6</span>A column that is not a feature at all</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p><code>Severity_Score</code> ranges 0 to 21 and averages <b>20.32 for normal rows</b> versus <b>18.57 for attack rows</b>. It is the NSL-KDD difficulty score: how many of 21 reference learners classified that row correctly.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>It is metadata about the row's difficulty, produced after the fact by other models. It was never observed on the network. Leaving it in the feature matrix is <b>target leakage</b>: the score correlates with the label, so accuracy rises for a reason that will not exist on live traffic.</p></div>
+    <div class="step"><h3>Tools available</h3><p>Ask of every column: could a sensor have measured this at the moment the connection happened? Correlation with the label is a hint, but the decisive test is where the value came from.</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Drop <code>Severity_Score</code> from the features. Keep it aside as a way to report which rows are hard. If a result looks too good, look for a leaked column before celebrating.</p></div>
+  </div>
+</section>
+
+<section class="issue">
+  <h2><span class="num">7</span>Categories that expand into many columns</h2>
+  <div class="steps">
+    <div class="step"><h3>Analysis</h3><p><code>Service</code> takes <b>70</b> distinct values in training and <b>64</b> in test; <code>Flag</code> takes 11; <code>Protocol_Type</code> takes 3. No category appears in test that is missing from training.</p></div>
+    <div class="step issue-b"><h3>Issue detected</h3><p>One-hot encoding <code>Service</code> alone turns one column into about 70, most of them almost always zero. Encoders fitted separately on train and test produce different column sets, which is a common and silent bug.</p></div>
+    <div class="step"><h3>Tools available</h3><p>Frequency table per category. A chi-square test of independence answers whether a category and the label are related; its p-value says how surprising the association would be if they were unrelated.</p></div>
+    <div class="step sol"><h3>Solution</h3><p>Fit the encoder on training data only, then apply it to test so both end up with identical columns. Group rare services into an <code>other</code> bucket. Keep categories that a chi-square test and your own judgement both say carry signal.</p></div>
+  </div>
+</section>
+
+  <div class="panel">
+    <h2>What to do first</h2>
+    <p>Order matters, because some steps change what later steps measure.</p>
+    <ol>
+      <li>Split first. Decide what is training and what is test <em>before</em> looking at anything else.</li>
+      <li>Drop the columns that are not features: <code>Severity_Score</code>, and any zero-variance column.</li>
+      <li>Fit encoders and scalers on <b>training only</b>, then apply them to test.</li>
+      <li>Transform the long-tailed numeric columns, then standardize.</li>
+      <li>Establish the majority-class baseline. Write it down. It is the number to beat.</li>
+      <li>Train, then report per-class recall and a confusion matrix, separating attacks seen in training
+      from attacks that were not.</li>
+    </ol>
+    <p class="note">A word on p-values, since we will use them today. A p-value does not tell you whether a
+    result is important, or how large a difference is. It answers one narrow question: if there were really
+    no difference, how often would data look at least this extreme by chance alone? Small p-value, unlikely
+    to be chance. That is all it claims.</p>
+  </div>
+
+</main>
+<button class="theme-fab" id="themeBtn" type="button">Toggle theme</button>
+<script>
+(function(){
+  var K='csec-theme', r=document.documentElement, s=null;
+  try{s=localStorage.getItem(K)}catch(e){}
+  if(s)r.setAttribute('data-theme',s);
+  document.getElementById('themeBtn').addEventListener('click',function(){
+    var cur=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    var next=cur==='dark'?'light':'dark';
+    r.setAttribute('data-theme',next);
+    try{localStorage.setItem(K,next)}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
