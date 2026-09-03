@@ -337,16 +337,22 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
     if(!b) return;
     e.preventDefault(); e.stopPropagation();
     var txt = build(parseInt(b.dataset.i, 10), b.classList.contains('ai-all'));
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Copied'); },
-                                             function(){ flash(b, 'Press Ctrl+C'); });
-    } else {
+    // The modern API needs a secure context and a permission that a projector browser
+    // or a sandboxed frame may refuse, so a rejection falls through to the old method
+    // rather than telling the student to press a key that would copy nothing.
+    function legacy(){
       var ta = document.createElement('textarea');
-      ta.value = txt; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); flash(b, 'Copied'); }
-      catch(err) { flash(b, 'Copy failed'); }
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(err) { ok = false; }
       document.body.removeChild(ta);
+      flash(b, ok ? 'Copied' : 'Copy blocked');
     }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Copied'); }, legacy);
+    } else { legacy(); }
   });
 })();
 </script>
