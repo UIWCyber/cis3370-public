@@ -418,6 +418,9 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
   // Copy a step, or every step up to here, for pasting into Claude. No network call:
   // students are on the free desktop app, so the deck's job is to hand over text.
   var P = window.__PROMPTS__ || {}, CTX = window.__DECK_CONTEXT__ || '';
+  var NL = String.fromCharCode(10);   // HTML_SHELL is a non-raw Python string, so a
+                                      // backslash-n here is eaten at import time and
+                                      // leaves an unterminated JS string literal.
   function build(upto, all){
     var keys = Object.keys(P).map(Number).sort(function(a,b){return a-b;});
     var take = all ? keys.filter(function(k){return k <= upto;}) : [upto];
@@ -427,8 +430,7 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
       out.push((all ? 'Step ' + (i+1) + ' - ' : '') + P[k].title);
       out.push(P[k].text, '');
     });
-    return out.join('
-').trim();
+    return out.join(NL).trim();
   }
   function flash(btn, msg){
     var old = btn.textContent; btn.textContent = msg;
