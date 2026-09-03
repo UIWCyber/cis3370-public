@@ -226,7 +226,10 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
     else if(/^[0-9]$/.test(e.key)){/* number jump buffer */ jump(e.key);}
   });
   // click nav
-  stage.addEventListener('click',function(e){ if(e.target.closest('#grid'))return; next(); });
+  // Clicking the stage advances. Controls inside a slide must opt out, or pressing
+  // one both fires the control and skips the slide it belongs to.
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('#grid')||e.target.closest('.ai-btn'))return; next(); });
   // number jump
   var buf=''; var bt;
   function jump(d){buf+=d; clearTimeout(bt); bt=setTimeout(function(){var n=parseInt(buf,10); if(n)show(n-1); buf='';},600);}
@@ -273,6 +276,7 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
   document.addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('.ai-btn');
     if(!b) return;
+    e.preventDefault(); e.stopPropagation();
     var txt = build(parseInt(b.dataset.i, 10), b.classList.contains('ai-all'));
     if(navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Copied'); },
