@@ -156,44 +156,32 @@ print(sorted(os.listdir(path)))</pre>
 <section class="slide s-content" data-index="5"><h1 class="s-title">The File Has No Header, So You Name the Columns</h1><div class="s-body"><ul>
 <li>The raw files are plain text with no header row. Pandas would treat row one as column names.</li>
 </ul>
-<pre class="code">import pandas as pd
-
-COLS = [
-    &quot;Duration&quot;, &quot;Protocol_Type&quot;, &quot;Service&quot;, &quot;Flag&quot;, &quot;Src_Bytes&quot;, &quot;Dst_Bytes&quot;, &quot;Land&quot;,
-    &quot;Wrong_Fragments&quot;, &quot;Urgent&quot;, &quot;Hot&quot;, &quot;Num_Failed_Logins&quot;, &quot;Logged_in&quot;, &quot;Num_Compromised&quot;,
-    &quot;Root_Shell&quot;, &quot;Su_Attempted&quot;, &quot;Num_Root&quot;, &quot;Num_File_Creations&quot;, &quot;Num_Shells&quot;,
-    &quot;Num_Access_Files&quot;, &quot;Num_Outbound_Commands&quot;, &quot;Is_Hot_Login&quot;, &quot;Is_Guest_Login&quot;, &quot;Count&quot;,
-    &quot;Srv_Count&quot;, &quot;Serror_rate&quot;, &quot;Srv_serror_rate&quot;, &quot;Rerror_rate&quot;, &quot;Srv_rerror_rate&quot;,
-    &quot;Same_srv_rate&quot;, &quot;Diff_srv_rate&quot;, &quot;Srv_diff_host_rate&quot;, &quot;Dst_host_count&quot;,
-    &quot;Dst_host_srv_count&quot;, &quot;Dst_host_name_srv_rate&quot;, &quot;Dst_host_diff_srv_rate&quot;,
-    &quot;Dst_host_same_src_port_rate&quot;, &quot;Dst_host_srv_diff_host_rate&quot;, &quot;Dst_host_serror_rate&quot;,
-    &quot;Dst_host_srv_serror_rate&quot;, &quot;Dst_host_rerror_rate&quot;, &quot;Dst_host_srv_rerror_rate&quot;,
-    &quot;Class&quot;, &quot;Difficulty&quot;,
-]
+<pre class="code">COLS = [ &quot;Duration&quot;, &quot;Protocol_Type&quot;, &quot;Service&quot;, &quot;Flag&quot;, &quot;Src_Bytes&quot;,
+         # ... 36 more feature names ...
+         &quot;Class&quot;, &quot;Difficulty&quot; ]
 
 train = pd.read_csv(os.path.join(path, &quot;KDDTrain+.txt&quot;), names=COLS)
 test  = pd.read_csv(os.path.join(path, &quot;KDDTest+.txt&quot;),  names=COLS)
 print(train.shape, test.shape)</pre>
 <div class="term"><div class="term-title">What you should see</div><div class="term-body"><div class="t-line t-out">(125973, 43) (22544, 43)</div></div></div>
+<ul>
+<li>All 43 names are in the prompt below. Do not type them: let Claude write the list, then read it.</li>
+</ul>
 <div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">If you skip <code>names=</code>, pandas silently eats the first connection as a header and you are one row short with nonsense column names.</span></div></div><div class="s-ai"><button type="button" class="ai-btn" data-i="5">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="5">Copy all steps so far</button></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">5</div></section>
 <section class="slide s-content" data-index="6"><h1 class="s-title">Build the Family Column Yourself</h1><div class="s-body"><ul>
 <li>The file gives you the attack name. It does not group them. That grouping is yours to make.</li>
 </ul>
-<pre class="code">FAMILY = {}
-for fam, names in {
-    &quot;DoS&quot;:   &quot;back land neptune pod smurf teardrop apache2 udpstorm processtable mailbomb worm&quot;,
-    &quot;Probe&quot;: &quot;satan ipsweep nmap portsweep mscan saint&quot;,
-    &quot;R2L&quot;:   (&quot;guess_passwd ftp_write imap phf multihop warezmaster warezclient spy xlock &quot;
-              &quot;xsnoop snmpguess snmpgetattack httptunnel sendmail named&quot;),
-    &quot;U2R&quot;:   &quot;buffer_overflow loadmodule rootkit perl sqlattack xterm ps&quot;,
-}.items():
-    for n in names.split():
-        FAMILY[n] = fam
+<pre class="code">FAMILY = {&quot;neptune&quot;: &quot;DoS&quot;, &quot;satan&quot;: &quot;Probe&quot;, &quot;guess_passwd&quot;: &quot;R2L&quot;,
+          &quot;buffer_overflow&quot;: &quot;U2R&quot;, ...}          # 22 names in training
 
 for df in (train, test):
-    df[&quot;Family&quot;] = df[&quot;Class&quot;].apply(lambda c: &quot;Normal&quot; if c == &quot;normal&quot; else FAMILY.get(c, &quot;UNKNOWN&quot;))
+    df[&quot;Family&quot;] = df[&quot;Class&quot;].apply(
+        lambda c: &quot;Normal&quot; if c == &quot;normal&quot; else FAMILY.get(c, &quot;UNKNOWN&quot;))
 
 print(train[&quot;Family&quot;].value_counts())</pre>
+<ul>
+<li>Four families: <strong>DoS</strong>, <strong>Probe</strong>, <strong>R2L</strong>, <strong>U2R</strong>. Normal traffic is its own label.</li>
+</ul>
 <div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">Check for <code>UNKNOWN</code> before you trust the grouping. An attack name you did not map is a silent hole in every count that follows.</span></div></div><div class="s-ai"><button type="button" class="ai-btn" data-i="6">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="6">Copy all steps so far</button></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">6</div></section>
 <section class="slide s-content" data-index="7"><h1 class="s-title">Two Formats, Two Column Counts</h1><div class="s-body"><ul>
 <li>The class found this: <code>KDDTest+.arff</code> declares <strong>42 attributes</strong>, <code>KDDTest+.txt</code> has <strong>43 columns</strong>.</li>
