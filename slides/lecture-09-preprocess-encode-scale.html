@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIS 3370 Intrusion Detection Systems - Session 9: Stage 4: Preprocess, Encode, Scale, and Face the Imbalance</title>
+<style>
+:root{
+  --slate:#222222; --slate2:#2b2b2e; --panel:#2c2f34; --panel2:#333;
+  --ink:#f4f4f4; --muted:#b9bcc2; --line:#41444b;
+  --red:#cb333b; --red-dk:#89191c; --red-lt:#f08a91;
+  --grn:#7be39a; --amb:#e2a04a;
+  --mono:"JetBrains Mono","DejaVu Sans Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(--sans)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c0c0d}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center;background:var(--slate)}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:54px 64px 48px;background:var(--slate)}
+.slide.active{display:flex}
+.slide.s-title,.slide.s-section{align-items:flex-start;justify-content:center}
+/* accent rails */
+#deck::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--red);z-index:5}
+.s-title{background:var(--slate)}
+.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:19px}
+.s-table th{background:#26262a;color:#fff;text-align:left;font-weight:700;padding:8px 12px;border-bottom:2px solid var(--red)}
+.s-table td{padding:8px 12px;border-bottom:1px solid #34343a;color:#e8e8ea;vertical-align:top}
+.s-table tr:last-child td{border-bottom:none}
+.title-band{border-left:8px solid var(--red);padding:8px 0 8px 28px}
+.title-kicker{color:var(--red-lt);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:20px}
+.title-main{font-size:52px;line-height:1.08;margin:14px 0 18px;font-weight:800}
+.title-meta{font-size:22px;color:var(--ink);font-weight:600}
+.title-sub{font-size:17px;color:var(--muted);margin-top:8px}
+.s-title .s-num{display:none}
+/* section divider slides */
+.s-section .s-title{color:#fff}
+.s-section{background:var(--slate)}
+.s-section .s-body{font-size:35px;font-weight:800;line-height:1.28;letter-spacing:-.01em;background:var(--panel);border:1px solid var(--line);border-left:14px solid var(--red);border-radius:14px;padding:34px 40px 34px 38px;box-shadow:0 2px 10px rgba(0,0,0,.28);flex:0 0 auto;align-self:stretch;overflow:visible}
+.s-section .s-body ul{margin:0;padding-left:1.1em}
+.s-section .s-body li+li{margin-top:18px}
+/* Opt-in warning divider: {type=section kind=warn}. Amber matches the warn
+   callout, so it is used only where the content really is a rule or hazard. */
+.s-section.s-kind-warn .s-body{border-left-color:var(--amb)}
+.s-section.s-kind-warn .s-body ul{list-style:none;padding-left:0}
+.s-section.s-kind-warn .s-body li{position:relative;padding-left:1.7em}
+.s-section.s-kind-warn .s-body li::before{content:"\26A0";position:absolute;left:0;top:.02em;color:var(--amb);font-size:.9em;line-height:1.28}
+/* headers */
+.s-title.s-title{}
+h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
+.vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.lead{color:var(--muted);font-size:21px;margin:0 0 6px}
+ul,ol{margin:4px 0;padding-left:30px}
+li{margin:8px 0}
+li.sub{list-style:circle;color:var(--muted);font-size:20px}
+strong{color:#fff}
+em{color:var(--red-lt);font-style:normal;font-weight:600}
+/* A link on a dark slide left at the browser default is #0000EE, which is 1.85:1
+   against this background and fails AA outright. The house pink is 7.25:1, and the
+   underline stays so the link is not signalled by colour alone. */
+a{color:var(--red-lt);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+a:visited{color:var(--red-lt)}
+a:hover,a:focus-visible{color:#fff;text-decoration-thickness:2px}
+code{font-family:var(--mono);background:#15161a;color:#ffd9b0;padding:2px 7px;border-radius:5px;font-size:.9em}
+p{margin:6px 0}
+/* objectives */
+ol.objectives li,ol.steps li{margin:12px 0}
+/* step cards */
+ol.steps{list-style:none;padding:0;counter-reset:none}
+ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:12px 16px}
+.step-n{flex:none;width:34px;height:34px;border-radius:8px;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+.step-t{padding-top:4px}
+/* callouts */
+.callout{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--red);font-size:24px}
+.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:16px;padding-top:3px}
+.c-def{border-left-color:var(--red)} .c-def .c-label{color:var(--red-lt)}
+.c-note{border-left-color:#5a8fd6} .c-note .c-label{color:#8fb8ea}
+.c-warn{border-left-color:var(--amb)} .c-warn .c-label{color:var(--amb)}
+.c-tip{border-left-color:var(--grn)} .c-tip .c-label{color:var(--grn)}
+.c-analogy{border-left-color:#b48ad9} .c-analogy .c-label{color:#c6a6e6}
+.c-why{border-left-color:var(--red-lt)} .c-why .c-label{color:var(--red-lt)}
+/* terminal */
+.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:18px;margin:4px 0}
+.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:14px;border-bottom:1px solid #2a2c33}
+.term-body{padding:12px 16px;line-height:1.5}
+.t-line{white-space:pre-wrap;word-break:break-word}
+.t-in{color:#eaeaea}
+.t-prompt{color:var(--red-lt);font-weight:700;user-select:none}
+.t-cmd{color:#7fd1ff;font-weight:700}
+.t-args{color:#ffd9b0}
+.t-ann{color:#6f7681;font-style:italic;margin-left:10px}
+.t-out{color:#9fa6b0}
+/* code block */
+pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:17px;color:#d8dee9;overflow:auto;margin:4px 0}
+/* diagrams */
+.diagram-wrap{display:flex;justify-content:center;align-items:center;flex:1;min-height:0}
+/* The figure is a column that may not outgrow the space the slide gives it, and the
+   caption is the part that must never be the bit that gets pushed out: the drawing
+   can shrink, the sentence explaining it cannot. Without this the svg claimed its
+   full max-height and the caption spilled under whatever came next on the slide,
+   silently, looking correct in the source. */
+.diagram-wrap svg{max-width:100%;max-height:400px;height:auto;min-height:0;flex:0 1 auto}
+/* width:100% because a flex item is otherwise sized by its widest child, which here is
+   the caption: without it a figure came out as wide as its sentence happened to be, and
+   a short caption shrank the drawing until its labels could not be read from the room.
+   align-items keeps an engine figure, which carries its own width, centred inside it. */
+.diagram-wrap figure{margin:0;text-align:center;display:flex;flex-direction:column;
+  align-items:center;min-height:0;max-height:100%;width:100%}
+.diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
+.diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
+/* footer + slide number */
+.s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
+
+.ai-btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer}
+.ai-btn:hover{border-color:var(--red-lt);color:var(--red-lt)}
+.ai-btn:focus-visible{outline:3px solid var(--red-lt);outline-offset:2px}
+@media print{.s-ai{display:none}}
+.s-foot{position:absolute;left:64px;right:64px;bottom:16px;display:flex;justify-content:space-between;color:#6f7681;font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.s-num{position:absolute;right:22px;bottom:14px;color:#6f7681;font-size:13px;font-weight:700}
+.tag{position:absolute;right:64px;top:20px;color:var(--muted);font-size:13px}
+/* progress bar */
+#prog{position:fixed;top:0;left:0;height:5px;background:var(--red);z-index:50;transition:width .2s}
+/* HUD */
+#hud{position:fixed;bottom:10px;left:12px;color:#666;font-size:12px;font-family:var(--mono);z-index:40;user-select:none}
+/* speaker notes */
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:#0b0b0cee;border-top:3px solid var(--red);
+  color:#e6e6e6;padding:16px 22px;font-size:16px;line-height:1.5;display:none;z-index:45;white-space:pre-wrap}
+#notes.show{display:block}
+#notes h3{margin:0 0 8px;color:var(--red-lt);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+/* grid overview */
+#grid{position:fixed;inset:0;background:#0c0c0dfa;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:12px;padding:24px;overflow:auto}
+#grid.show{display:grid}
+#grid .g{border:1px solid var(--line);border-radius:8px;background:var(--slate);padding:10px;cursor:pointer;height:150px;overflow:hidden;position:relative}
+#grid .g:hover{border-color:var(--red)}
+#grid .g .gt{font-size:12px;color:var(--muted)}
+#grid .g .gh{font-size:15px;font-weight:700;margin-top:6px}
+#grid .g .gn{position:absolute;right:8px;bottom:6px;color:#666;font-size:11px}
+/* print: one slide per page */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{background:#fff;height:auto}
+  #stage{position:static;display:block;overflow:visible}
+  #deck{transform:none!important;width:1280px;height:auto}
+  #prog,#hud,#notes,#grid{display:none!important}
+  .slide{position:relative;display:flex!important;inset:auto;width:1280px;height:720px;page-break-after:always;break-after:page}
+  #deck::before{position:absolute}
+}
+</style></head>
+<body>
+<div id="prog"></div>
+<div id="stage"><div id="deck">
+<section class="slide s-title" data-index="1"><div class="title-band"><div class="title-kicker">CIS 3370 Intrusion Detection Systems</div><h1 class="title-main">Stage 4: Preprocess, Encode, Scale, and Face the Imbalance</h1><div class="title-meta">Session 9 &nbsp;·&nbsp; M3 - Detection, from Baselines to Models</div><div class="title-sub">Outcomes: CO2, CO3 &nbsp;·&nbsp; Dr. Gonzalo D Parra</div></div><div class="s-num">1</div></section>
+<section class="slide s-objectives" data-index="2"><h1 class="s-title">Learning Objectives</h1><div class="s-body"><p class="lead">By the end of this session you will be able to:</p><ol class="objectives"><li>- Turn three text columns into numbers and say what that costs in width.</li><li>- Apply the fit-on-training-only rule, then measure what breaking it does to every test row.</li><li>- State the class imbalance in this dataset as a number, and choose between the three honest responses to it.</li><li>- Save a training matrix and a test matrix whose shapes you can defend.</li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">2</div></section>
+<section class="slide s-section" data-index="3"><h1 class="s-title vis-hidden">A Model Does Not Accept a Table</h1><div class="s-body"><ul>
+<li>It accepts a matrix: all numbers, no gaps, columns whose sizes are comparable.</li>
+<li>Everything in this session is the work of getting from one to the other without cheating.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">3</div></section>
+<section class="slide s-content" data-index="4"><h1 class="s-title">Three Things a Matrix Has To Be</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Numeric.</strong> Every column. A model cannot multiply the word <code>http</code> by a weight.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Complete.</strong> No missing values, or a declared decision about what to put there.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Comparable.</strong> A column that runs to millions should not outvote one that runs to ten.</span></li></ol>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">NSL-KDD is unusually kind here: no missing values at all. Say that out loud, because the next dataset will not be, and you should notice the difference rather than assume it.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">4</div></section>
+<section class="slide s-content" data-index="5"><h1 class="s-title">The Three Columns That Are Words</h1><div class="s-body"><table class="s-table"><thead><tr><th>Column</th><th>Distinct values in training</th><th>What it holds</th></tr></thead><tbody><tr><td><code>protocol_type</code></td><td>3</td><td>tcp, udp, icmp</td></tr><tr><td><code>service</code></td><td>70</td><td>http, ftp, smtp, and 67 more</td></tr><tr><td><code>flag</code></td><td>11</td><td>how the connection ended, as a code</td></tr></tbody></table>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>One-hot encoding.</strong> Replace one text column with one new column per distinct value, holding 1 where that value appeared and 0 everywhere else.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">5</div></section>
+<section class="slide s-content" data-index="6"><div class="s-ai"><button type="button" class="ai-btn" data-i="6">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="6">Copy all steps so far</button></div><h1 class="s-title">Which Turns 41 Columns Into 122</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">38 columns were already numbers and stay as they are.</span></li><li><span class="step-n">2</span><span class="step-t">3 text columns become 3 plus 70 plus 11, which is 84 new columns.</span></li><li><span class="step-n">3</span><span class="step-t">38 plus 84 is 122 columns, from 41. <code>service</code> is two thirds of the growth on its own.</span></li></ol>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">Width is not free. Every column is a weight to learn, and a column that is 1 in eleven rows out of 125,973 gives a model almost nothing to learn from.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">6</div></section>
+<section class="slide s-content" data-index="7"><div class="s-ai"><button type="button" class="ai-btn" data-i="7">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="7">Copy all steps so far</button></div><h1 class="s-title">The Category You Have Never Seen</h1><div class="s-body"><ul>
+<li>Encode with training categories, and a value that appears only at test time has nowhere to go.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t">In this dataset you are lucky: every <code>service</code> in the test file also occurs in training.</span></li><li><span class="step-n">2</span><span class="step-t">Six services occur only in training, which is harmless: their columns are simply all zero at test time.</span></li><li><span class="step-n">3</span><span class="step-t">On your own data you will not be lucky, so decide now: an <code>other</code> bucket, or drop the row, or fail loudly.</span></li></ol>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">The wrong answer is to encode training and test separately. You get two matrices with different columns in a different order, and everything after that is quietly meaningless.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">7</div></section>
+<section class="slide s-section" data-index="8"><h1 class="s-title vis-hidden">Scale, and the Rule That Protects the Test Set</h1><div class="s-body"><ul>
+<li>You met the long tail in the analysis session. Now it has to become a column a model can use.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">8</div></section>
+<section class="slide s-content" data-index="9"><h1 class="s-title">Two Steps, in This Order</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><code>log1p</code> first, because the byte columns run from 0 to hundreds of millions and are full of zeros.</span></li><li><span class="step-n">2</span><span class="step-t">Standardize second, so every column is measured in standard deviations rather than in bytes.</span></li><li><span class="step-n">3</span><span class="step-t">Fit the standardizer on training data only. Apply it to both.</span></li></ol>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>Fit.</strong> Measuring the mean and the spread. <strong>Apply.</strong> Subtracting and dividing. The rule is that fitting sees only training data; applying may touch anything.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">9</div></section>
+<section class="slide s-content" data-index="10"><div class="s-ai"><button type="button" class="ai-btn" data-i="10">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="10">Copy all steps so far</button></div><h1 class="s-title">What Breaking the Rule Costs, Measured</h1><div class="s-body"><ul>
+<li>Fitting the standardizer on training plus test, on <code>src_bytes</code> after <code>log1p</code>:</li>
+</ul>
+<table class="s-table"><thead><tr><th></th><th>Mean</th><th>Standard deviation</th></tr></thead><tbody><tr><td>fitted on training only</td><td>3.2297</td><td>2.9822</td></tr><tr><td>fitted on training and test together</td><td>3.2943</td><td>3.0138</td></tr><tr><td>difference</td><td>0.0646</td><td>0.0316</td></tr></tbody></table>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">That looks harmless, and that is exactly the danger. Every one of the 22,544 test rows moves, the largest by 0.073 standard deviations, and nothing anywhere reports an error. A leak that broke something loudly would be easy.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
+<section class="slide s-content" data-index="11"><h1 class="s-title">The Rule as a Tree</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Are you computing a number from the data, such as a mean, a scale, a category list, a vocabulary?</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Yes</strong>: compute it on training data only, then apply it everywhere.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>No</strong>, it is a fixed transformation such as <code>log1p</code>: apply it anywhere, it learns nothing.</span></li><li><span class="step-n">4</span><span class="step-t">Unsure? Ask whether the transformation would change if you deleted the test set. If yes, it learns.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">This one question, would it change if the test set disappeared, catches almost every leak a student writes.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">11</div></section>
+<section class="slide s-section" data-index="12"><h1 class="s-title vis-hidden">The Class Imbalance, Which Is Not Subtle</h1><div class="s-body"><ul>
+<li>Four attack families and normal traffic, in wildly different amounts.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">12</div></section>
+<section class="slide s-diagram" data-index="13"><h1 class="s-title">Five Classes, One Invisible</h1><div class="s-body"><figure class="diagram" data-spec="cf9dd2c29cde"><svg aria-labelledby="dt-cf9dd2c29cde" aria-describedby="dc-cf9dd2c29cde" viewBox="0 0 654 410" width="654" height="410" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace"><title id="dt-cf9dd2c29cde">Rows per family in the training file, with U2R too small to see</title><defs><marker id="ah" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#c9ccd1"/></marker><marker id="ahs" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#cb333b"/></marker></defs><text x="22" y="24" fill="#e8565f" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700">Rows per family in the training file, with U2R too small to see</text><line x1="64.0" y1="350.0" x2="624.0" y2="350.0" stroke="#5a3034" stroke-width="1"/><text x="54.0" y="354.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="end">0</text><line x1="64.0" y1="275.0" x2="624.0" y2="275.0" stroke="#5a3034" stroke-width="1" stroke-dasharray="6 5"/><text x="54.0" y="279.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="end">25000</text><line x1="64.0" y1="200.0" x2="624.0" y2="200.0" stroke="#5a3034" stroke-width="1" stroke-dasharray="6 5"/><text x="54.0" y="204.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="end">50000</text><line x1="64.0" y1="125.0" x2="624.0" y2="125.0" stroke="#5a3034" stroke-width="1" stroke-dasharray="6 5"/><text x="54.0" y="129.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="end">75000</text><line x1="64.0" y1="50.0" x2="624.0" y2="50.0" stroke="#5a3034" stroke-width="1" stroke-dasharray="6 5"/><text x="54.0" y="54.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="end">100000</text><line x1="64.0" y1="50.0" x2="64.0" y2="350.0" stroke="#f4f4f4" stroke-width="1.6"/><line x1="64.0" y1="350.0" x2="624.0" y2="350.0" stroke="#f4f4f4" stroke-width="1.6"/><text x="18" y="200.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" text-anchor="middle" transform="rotate(-90 18 200.0)">rows</text><text x="120.0" y="370.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="middle">normal</text><text x="232.0" y="370.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="middle">DoS</text><text x="344.0" y="370.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="middle">Probe</text><text x="456.0" y="370.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="middle">R2L</text><text x="568.0" y="370.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="400" text-anchor="middle">U2R</text><rect x="80.8" y="148.0" width="75.4" height="202.0" rx="3" fill="#cb333b" opacity="0.92"/><rect x="192.8" y="212.2" width="75.4" height="137.8" rx="3" fill="#cb333b" opacity="0.92"/><rect x="304.8" y="315.0" width="75.4" height="35.0" rx="3" fill="#cb333b" opacity="0.92"/><rect x="416.8" y="347.0" width="75.4" height="3.0" rx="3" fill="#cb333b" opacity="0.92"/><rect x="528.8" y="349.8" width="75.4" height="0.2" rx="3" fill="#cb333b" opacity="0.92"/></svg><figcaption id="dc-cf9dd2c29cde">U2R has 52 rows. On a scale that fits 67,343, its bar is not visible, which is the entire problem.</figcaption></figure></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">13</div></section>
+<section class="slide s-content" data-index="14"><h1 class="s-title">The Numbers Behind the Missing Bar</h1><div class="s-body"><table class="s-table"><thead><tr><th>Family</th><th>Training rows</th><th>Share</th></tr></thead><tbody><tr><td>normal</td><td>67,343</td><td>53.5 percent</td></tr><tr><td>DoS</td><td>45,927</td><td>36.5 percent</td></tr><tr><td>Probe</td><td>11,656</td><td>9.3 percent</td></tr><tr><td>R2L</td><td>995</td><td>0.8 percent</td></tr><tr><td>U2R</td><td>52</td><td>0.041 percent</td></tr></tbody></table>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">U2R is a user gaining root. It is the rarest family and the most serious one, which is the shape of most security data: what you most want to catch is what you have the least of.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">14</div></section>
+<section class="slide s-content" data-index="15"><h1 class="s-title">What "Good Accuracy" Is Worth Here</h1><div class="s-body"><ul>
+<li>A model that always answers <code>normal</code> scores 53.5 percent on training and 43.1 percent on test.</li>
+<li>It catches nothing, ever, and it would beat a careless first attempt.</li>
+</ul>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">Any accuracy number below about 54 percent on this training set is worse than answering the same thing every time. Accuracy is the metric that hides this, which is why the evaluation session exists.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">15</div></section>
+<section class="slide s-content" data-index="16"><h1 class="s-title">Three Honest Answers to Imbalance</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Weight it.</strong> Tell the model a U2R row matters more. Under a balanced scheme, about 485 times more.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Resample it.</strong> Duplicate or synthesise U2R rows until the classes match. That is 52 rows becoming 67,343, a factor of 1,295.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Report per class.</strong> Change nothing about training, and refuse to publish a single accuracy number.</span></li></ol>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">These are not ranked. They fail differently: weighting distorts the loss, resampling invents data, and reporting per class leaves the model exactly as weak as it was but stops you lying about it.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">16</div></section>
+<section class="slide s-content" data-index="17"><div class="s-ai"><button type="button" class="ai-btn" data-i="17">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="17">Copy all steps so far</button></div><h1 class="s-title">Which One, and When</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Choose <strong>weighting</strong> when the model accepts weights and you want one model that treats rare rows seriously.</span></li><li><span class="step-n">2</span><span class="step-t">Choose <strong>resampling</strong> when the algorithm has no weights, and say in writing that you did it.</span></li><li><span class="step-n">3</span><span class="step-t">Choose <strong>per-class reporting</strong> always, on top of whichever other one you picked.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">Duplicating a row 1,295 times does not add information. It adds confidence about information you already had, which is how a model ends up certain and wrong.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">17</div></section>
+<section class="slide s-content" data-index="18"><div class="s-ai"><button type="button" class="ai-btn" data-i="18">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="18">Copy all steps so far</button></div><h1 class="s-title">Save the Matrices, State the Shapes</h1><div class="s-body"><ul>
+<li>The session ends with four files and four shapes you can defend out loud.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">18</div></section>
+<section class="slide s-content" data-index="19"><h1 class="s-title">What To Read, and the Exercise That Repeats This</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Section 5.1, Navigating Labeled Data, is the framing for what a training matrix is.</span></li><li><span class="step-n">2</span><span class="step-t">Section 5.4, Preparing Data for Success, is this whole session in the book's words.</span></li><li><span class="step-n">3</span><span class="step-t">Code It Programming Exercise 5-2, the predictive analytics notebook, does the same preparation on other data. Open it from MindTap.</span></li></ol>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">The exercise's data is clean and balanced, which yours is not. When you finish it, write one sentence about what it did not have to deal with.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">19</div></section>
+<section class="slide s-content" data-index="20"><div class="s-ai"><button type="button" class="ai-btn" data-i="20">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="20">Copy all steps so far</button></div><h1 class="s-title">The Loop, on the Matrix You Built</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Analysis</strong>: the shapes, the widths, the class shares.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Issue</strong>: the column that is almost always zero, or the class that is almost never there.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Tools</strong>: the encoder, the scaler, the weights.</span></li><li><span class="step-n">4</span><span class="step-t"><strong>Solution</strong>: what you kept, what you dropped, and the one thing you would do differently with more data.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">20</div></section>
+<section class="slide s-activity" data-index="21"><h1 class="s-title">In-Class Activity</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Encode the three text columns and report the width of your matrix. It should be 122 features before you add the log columns.</span></li><li><span class="step-n">2</span><span class="step-t">Compare the service values in training and test, and report how many appear in only one of them.</span></li><li><span class="step-n">3</span><span class="step-t">Fit a scaler both ways and report the difference in the mean it learned.</span></li><li><span class="step-n">4</span><span class="step-t">Report the rows and the share for U2R, and say what a balanced weight would be.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">21</div></section>
+<section class="slide s-exit" data-index="22"><h1 class="s-title">Exit Ticket</h1><div class="s-body"><ul>
+<li>Your test matrix has one more column than your training matrix. What did you do wrong?</li>
+<li>Fitting a scaler on all the data moved every test row by less than a tenth of a standard deviation. Why is that worse than a large error?</li>
+<li>You oversampled U2R from 52 rows to 67,343. What did you gain, and what did you not gain?</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">22</div></section>
+</div></div>
+<div id="hud"></div>
+<div id="notes"><h3>Speaker Notes (press N to hide)</h3><div id="notes-body"></div></div>
+<div id="grid"></div>
+<script>window.__NOTES__="";
+window.__PROMPTS__={"6": {"title": "Which Turns 41 Columns Into 122", "text": "Load KDDTrain+.txt and KDDTest+.txt with the column names from the ARFF header, as in the\nearlier session. Print how many distinct values protocol_type, service and flag have in\ntraining. Then one-hot encode those three columns and print the shape of the result before\nand after. Print the ten new columns that are 1 in the fewest rows, with their counts.\nThen update ids-report.html for this step, as agreed."}, "7": {"title": "The Category You Have Never Seen", "text": "Compare the set of values in the service column of the training file with the test file.\nPrint how many values appear only in training, how many only in test, and list any that are\nonly in test. Then encode both files using the training categories only, and prove the two\nmatrices have identical column names in identical order.\nThen update ids-report.html for this step, as agreed."}, "10": {"title": "What Breaking the Rule Costs, Measured", "text": "Add log1p versions of src_bytes, dst_bytes and duration to both files. Fit a standardizer on\ntraining only and print the mean and standard deviation it learned for src_bytes_log. Then fit\na second one on training and test combined and print the same two numbers. Print the\ndifference. Then standardize the test set both ways and print how many test rows change by\nmore than 0.01 standard deviations, and the largest single change.\nThen update ids-report.html for this step, as agreed."}, "17": {"title": "Which One, and When", "text": "Count the rows per attack family in training and in test, and print both as counts and as\npercentages. Then compute the class weight a balanced scheme would give each family. Then\ncompute how many copies of each U2R row an oversampler would have to make to match the normal\nclass. Print all three numbers in one table and say in one line which approach you would pick\nfor this dataset and why.\nThen update ids-report.html for this step, as agreed."}, "18": {"title": "Save the Matrices, State the Shapes", "text": "Build the final training and test matrices: one-hot encode the three text columns using\ntraining categories, add the log1p columns, standardize the numeric columns with a scaler\nfitted on training only, and drop difficulty and the raw class column from the features. Keep\nthe family label as a separate vector. Save X_train, y_train, X_test and y_test to disk in a\nformat that keeps the column names. Print the shape of each, and print the first five column\nnames of X_train so I can see the order.\nThen update ids-report.html for this step, as agreed."}, "20": {"title": "The Loop, on the Matrix You Built", "text": "Read ids-report.html and write the four sentences Analysis, Issue, Tools, Solution about the\nmatrix you just saved. Name the exact shapes. Then add one paragraph stating which imbalance\nstrategy you chose and what a reader would have to check to decide whether you were right.\nThen update ids-report.html for this step, as agreed."}};
+window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems. We are working through session 9, \"Stage 4: Preprocess, Encode, Scale, and Face the Imbalance\". You are running the code, not describing it: do each step, show me the commands you ran and the real output they produced, and keep any explanation to a line or two. I am a beginner, so use plain words.";</script>
+<script>
+(function(){
+  var deck=document.getElementById('deck'), stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var prog=document.getElementById('prog'), hud=document.getElementById('hud');
+  var notes=document.getElementById('notes'), grid=document.getElementById('grid');
+  var i=0, N=slides.length;
+  function fit(){
+    var pad=0, sw=(window.innerWidth-pad)/1280, sh=(window.innerHeight-pad)/720;
+    var s=Math.min(sw,sh); deck.style.transform='scale('+s+')';
+  }
+  function show(n){
+    i=Math.max(0,Math.min(N-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i);});
+    prog.style.width=((i+1)/N*100)+'%';
+    // Notes are stripped from the published deck, where N is guarded to do nothing, so the
+    // hint drops the key rather than inviting a press that answers with silence.
+    hud.textContent=(i+1)+' / '+N+'   [←→] nav  '+(window.__NOTES__?'[N]otes  ':'')+'[G]rid  [P]rint';
+    location.hash=(i+1);
+  }
+  function next(){show(i+1);} function prev(){show(i-1);}
+  window.addEventListener('resize',fit);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){show(0);} else if(e.key==='End'){show(N-1);}
+    // Only when there are notes to show. The published deck has them stripped to an
+    // empty string, and N used to open a panel containing nothing but its own title,
+    // which reads to a student as something broken rather than something withheld.
+    else if(e.key==='n'||e.key==='N'){ if(window.__NOTES__) notes.classList.toggle('show'); }
+    else if(e.key==='g'||e.key==='G'){grid.classList.toggle('show');}
+    else if(e.key==='p'||e.key==='P'){window.print();}
+    else if(e.key==='Escape'){grid.classList.remove('show');}
+    else if(/^[0-9]$/.test(e.key)){/* number jump buffer */ jump(e.key);}
+  });
+  // click nav
+  // Clicking the stage advances. Controls inside a slide must opt out, or pressing
+  // one both fires the control and skips the slide it belongs to.
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('#grid')||e.target.closest('.ai-btn'))return; next(); });
+  // number jump
+  var buf=''; var bt;
+  function jump(d){buf+=d; clearTimeout(bt); bt=setTimeout(function(){var n=parseInt(buf,10); if(n)show(n-1); buf='';},600);}
+  // grid
+  slides.forEach(function(s,k){
+    var g=document.createElement('div'); g.className='g';
+    var h=s.querySelector('.s-title,.title-main'); var t=s.querySelector('.tag');
+    g.innerHTML='<div class="gt">'+(t?t.textContent:'')+'</div><div class="gh">'+
+      (h?h.textContent:('Slide '+(k+1)))+'</div><div class="gn">'+(k+1)+'</div>';
+    g.addEventListener('click',function(ev){ev.stopPropagation();grid.classList.remove('show');show(k);});
+    grid.appendChild(g);
+  });
+  // init from hash
+  var h=parseInt((location.hash||'').replace('#',''),10);
+  fit(); show(isNaN(h)?0:h-1);
+})();
+</script>
+<script>
+(function(){
+  var nb=document.getElementById('notes-body');
+  if(window.__NOTES__){ nb.textContent=window.__NOTES__; }
+
+  // Copy a step, or every step up to here, for pasting into Claude. No network call:
+  // students are on the free desktop app, so the deck's job is to hand over text.
+  var P = window.__PROMPTS__ || {}, CTX = window.__DECK_CONTEXT__ || '';
+  var NL = String.fromCharCode(10);   // HTML_SHELL is a non-raw Python string, so a
+                                      // backslash-n here is eaten at import time and
+                                      // leaves an unterminated JS string literal.
+  function build(upto, all){
+    var keys = Object.keys(P).map(Number).sort(function(a,b){return a-b;});
+    var take = all ? keys.filter(function(k){return k <= upto;}) : [upto];
+    // The single-step copy assumes a chat that already has context; only the
+    // cumulative copy, meant for a fresh or reset chat, carries the preamble.
+    var out = (all && CTX) ? [CTX, ''] : [];
+    take.forEach(function(k, i){
+      if(!P[k]) return;
+      out.push((all ? 'Step ' + (i+1) + ' - ' : '') + P[k].title);
+      out.push(P[k].text, '');
+    });
+    return out.join(NL).trim();
+  }
+  function flash(btn, msg){
+    var old = btn.textContent; btn.textContent = msg;
+    setTimeout(function(){ btn.textContent = old; }, 1400);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.ai-btn');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var txt = build(parseInt(b.dataset.i, 10), b.classList.contains('ai-all'));
+    // The modern API needs a secure context and a permission that a projector browser
+    // or a sandboxed frame may refuse, so a rejection falls through to the old method
+    // rather than telling the student to press a key that would copy nothing.
+    function legacy(){
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(err) { ok = false; }
+      document.body.removeChild(ta);
+      flash(b, ok ? 'Prompt copied' : 'Copy blocked');
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Prompt copied'); }, legacy);
+    } else { legacy(); }
+  });
+})();
+</script>
+</body></html>
