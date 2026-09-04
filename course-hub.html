@@ -400,7 +400,7 @@ footer .links a{font-weight:600}
         <h3>Tools and data</h3>
         <ul>
           <li><strong>Text first:</strong> <code>awk</code>, <code>sed</code>, regular expressions. A log line is text before it is anything else.</li>
-          <li><strong>Datasets:</strong> NSL-KDD first, because it is small and well understood. It is not time-series, so we move to a second dataset with real ordering before the reproduction work begins.</li>
+          <li><strong>Datasets:</strong> NSL-KDD first, because it is small and well understood. It is not time-series, so we move to CIC-IDS2017, which has real ordering, before the reproduction work begins.</li>
           <li><strong>Column reference:</strong> <a href="nsl-kdd-features.html">every NSL-KDD column, verified against the files</a>. Ranges recomputed from the data, with the five places the circulating feature table is wrong marked in amber.</li>
           <li><strong>Models:</strong> classical baselines, LSTMs, transformers, parameter-efficient tuning of language models, and reinforcement learning for response.</li>
           <li><strong>Everything in Python</strong>, in a repository, reproducible by someone who is not you.</li>
@@ -508,7 +508,7 @@ var SESSIONS = [
   {wk:6,  date:"2026-10-01", day:"Thu", topic:"Classical baselines: logistic regression, decision tree and k-NN in scikit-learn (book ch 3.3)", note:"", tags:["lecture"]},
   {wk:7,  date:"2026-10-06", day:"Tue", topic:"Evaluation: the metrics that matter for detection, with scikit-learn (book ch 4.4)", note:"", tags:["lecture"]},
   {wk:7,  date:"2026-10-08", day:"Thu", topic:"From tabular to time-series: CIC-IDS2017, with pandas windows and a split by time", note:"Ordering, windows, leakage", tags:["lecture"]},
-  {wk:8,  date:"2026-10-13", day:"Tue", topic:"Sequence models: LSTMs on the time-series set (book ch 3.4)", note:"", tags:["lecture"]},
+  {wk:8,  date:"2026-10-13", day:"Tue", topic:"Sequence models: LSTMs on CIC-IDS2017 (book ch 3.4)", note:"", tags:["lecture"]},
   {wk:8,  date:"2026-10-15", day:"Thu", topic:"No class", note:"Fall Break (Oct 15 to 16, university calendar)", tags:["noclass"]},
   {wk:9,  date:"2026-10-20", day:"Tue", topic:"Transformers and PEFT on log sequences (book ch 1.3)", note:"", tags:["lecture"]},
   {wk:9,  date:"2026-10-22", day:"Thu", topic:"Capstone progress presentations, day 1", note:"Feedback session", tags:["capstone"]},
