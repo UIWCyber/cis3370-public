@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIS 3370 Intrusion Detection Systems - Session 5: Stage 1: Generate the Data an IDS Would Read</title>
+<style>
+:root{
+  --slate:#222222; --slate2:#2b2b2e; --panel:#2c2f34; --panel2:#333;
+  --ink:#f4f4f4; --muted:#b9bcc2; --line:#41444b;
+  --red:#cb333b; --red-dk:#89191c; --red-lt:#f08a91;
+  --grn:#7be39a; --amb:#e2a04a;
+  --mono:"JetBrains Mono","DejaVu Sans Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(--sans)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c0c0d}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center;background:var(--slate)}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:54px 64px 48px;background:var(--slate)}
+.slide.active{display:flex}
+.slide.s-title,.slide.s-section{align-items:flex-start;justify-content:center}
+/* accent rails */
+#deck::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--red);z-index:5}
+.s-title{background:var(--slate)}
+.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:19px}
+.s-table th{background:#26262a;color:#fff;text-align:left;font-weight:700;padding:8px 12px;border-bottom:2px solid var(--red)}
+.s-table td{padding:8px 12px;border-bottom:1px solid #34343a;color:#e8e8ea;vertical-align:top}
+.s-table tr:last-child td{border-bottom:none}
+.title-band{border-left:8px solid var(--red);padding:8px 0 8px 28px}
+.title-kicker{color:var(--red-lt);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:20px}
+.title-main{font-size:52px;line-height:1.08;margin:14px 0 18px;font-weight:800}
+.title-meta{font-size:22px;color:var(--ink);font-weight:600}
+.title-sub{font-size:17px;color:var(--muted);margin-top:8px}
+.s-title .s-num{display:none}
+/* section divider slides */
+.s-section .s-title{color:#fff}
+.s-section{background:var(--slate)}
+.s-section .s-body{font-size:35px;font-weight:800;line-height:1.28;letter-spacing:-.01em;background:var(--panel);border:1px solid var(--line);border-left:14px solid var(--red);border-radius:14px;padding:34px 40px 34px 38px;box-shadow:0 2px 10px rgba(0,0,0,.28);flex:0 0 auto;align-self:stretch;overflow:visible}
+.s-section .s-body ul{margin:0;padding-left:1.1em}
+.s-section .s-body li+li{margin-top:18px}
+/* Opt-in warning divider: {type=section kind=warn}. Amber matches the warn
+   callout, so it is used only where the content really is a rule or hazard. */
+.s-section.s-kind-warn .s-body{border-left-color:var(--amb)}
+.s-section.s-kind-warn .s-body ul{list-style:none;padding-left:0}
+.s-section.s-kind-warn .s-body li{position:relative;padding-left:1.7em}
+.s-section.s-kind-warn .s-body li::before{content:"\26A0";position:absolute;left:0;top:.02em;color:var(--amb);font-size:.9em;line-height:1.28}
+/* headers */
+.s-title.s-title{}
+h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
+.vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.lead{color:var(--muted);font-size:21px;margin:0 0 6px}
+ul,ol{margin:4px 0;padding-left:30px}
+li{margin:8px 0}
+li.sub{list-style:circle;color:var(--muted);font-size:20px}
+strong{color:#fff}
+em{color:var(--red-lt);font-style:normal;font-weight:600}
+/* A link on a dark slide left at the browser default is #0000EE, which is 1.85:1
+   against this background and fails AA outright. The house pink is 7.25:1, and the
+   underline stays so the link is not signalled by colour alone. */
+a{color:var(--red-lt);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+a:visited{color:var(--red-lt)}
+a:hover,a:focus-visible{color:#fff;text-decoration-thickness:2px}
+code{font-family:var(--mono);background:#15161a;color:#ffd9b0;padding:2px 7px;border-radius:5px;font-size:.9em}
+p{margin:6px 0}
+/* objectives */
+ol.objectives li,ol.steps li{margin:12px 0}
+/* step cards */
+ol.steps{list-style:none;padding:0;counter-reset:none}
+ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:12px 16px}
+.step-n{flex:none;width:34px;height:34px;border-radius:8px;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+.step-t{padding-top:4px}
+/* callouts */
+.callout{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--red);font-size:24px}
+.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:16px;padding-top:3px}
+.c-def{border-left-color:var(--red)} .c-def .c-label{color:var(--red-lt)}
+.c-note{border-left-color:#5a8fd6} .c-note .c-label{color:#8fb8ea}
+.c-warn{border-left-color:var(--amb)} .c-warn .c-label{color:var(--amb)}
+.c-tip{border-left-color:var(--grn)} .c-tip .c-label{color:var(--grn)}
+.c-analogy{border-left-color:#b48ad9} .c-analogy .c-label{color:#c6a6e6}
+.c-why{border-left-color:var(--red-lt)} .c-why .c-label{color:var(--red-lt)}
+/* terminal */
+.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:18px;margin:4px 0}
+.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:14px;border-bottom:1px solid #2a2c33}
+.term-body{padding:12px 16px;line-height:1.5}
+.t-line{white-space:pre-wrap;word-break:break-word}
+.t-in{color:#eaeaea}
+.t-prompt{color:var(--red-lt);font-weight:700;user-select:none}
+.t-cmd{color:#7fd1ff;font-weight:700}
+.t-args{color:#ffd9b0}
+.t-ann{color:#6f7681;font-style:italic;margin-left:10px}
+.t-out{color:#9fa6b0}
+/* code block */
+pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:17px;color:#d8dee9;overflow:auto;margin:4px 0}
+/* diagrams */
+.diagram-wrap{display:flex;justify-content:center;align-items:center;flex:1;min-height:0}
+/* The figure is a column that may not outgrow the space the slide gives it, and the
+   caption is the part that must never be the bit that gets pushed out: the drawing
+   can shrink, the sentence explaining it cannot. Without this the svg claimed its
+   full max-height and the caption spilled under whatever came next on the slide,
+   silently, looking correct in the source. */
+.diagram-wrap svg{max-width:100%;max-height:400px;height:auto;min-height:0;flex:0 1 auto}
+/* width:100% because a flex item is otherwise sized by its widest child, which here is
+   the caption: without it a figure came out as wide as its sentence happened to be, and
+   a short caption shrank the drawing until its labels could not be read from the room.
+   align-items keeps an engine figure, which carries its own width, centred inside it. */
+.diagram-wrap figure{margin:0;text-align:center;display:flex;flex-direction:column;
+  align-items:center;min-height:0;max-height:100%;width:100%}
+.diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
+.diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
+/* footer + slide number */
+.s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
+
+.ai-btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer}
+.ai-btn:hover{border-color:var(--red-lt);color:var(--red-lt)}
+.ai-btn:focus-visible{outline:3px solid var(--red-lt);outline-offset:2px}
+@media print{.s-ai{display:none}}
+.s-foot{position:absolute;left:64px;right:64px;bottom:16px;display:flex;justify-content:space-between;color:#6f7681;font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.s-num{position:absolute;right:22px;bottom:14px;color:#6f7681;font-size:13px;font-weight:700}
+.tag{position:absolute;right:64px;top:20px;color:var(--muted);font-size:13px}
+/* progress bar */
+#prog{position:fixed;top:0;left:0;height:5px;background:var(--red);z-index:50;transition:width .2s}
+/* HUD */
+#hud{position:fixed;bottom:10px;left:12px;color:#666;font-size:12px;font-family:var(--mono);z-index:40;user-select:none}
+/* speaker notes */
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:#0b0b0cee;border-top:3px solid var(--red);
+  color:#e6e6e6;padding:16px 22px;font-size:16px;line-height:1.5;display:none;z-index:45;white-space:pre-wrap}
+#notes.show{display:block}
+#notes h3{margin:0 0 8px;color:var(--red-lt);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+/* grid overview */
+#grid{position:fixed;inset:0;background:#0c0c0dfa;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:12px;padding:24px;overflow:auto}
+#grid.show{display:grid}
+#grid .g{border:1px solid var(--line);border-radius:8px;background:var(--slate);padding:10px;cursor:pointer;height:150px;overflow:hidden;position:relative}
+#grid .g:hover{border-color:var(--red)}
+#grid .g .gt{font-size:12px;color:var(--muted)}
+#grid .g .gh{font-size:15px;font-weight:700;margin-top:6px}
+#grid .g .gn{position:absolute;right:8px;bottom:6px;color:#666;font-size:11px}
+/* print: one slide per page */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{background:#fff;height:auto}
+  #stage{position:static;display:block;overflow:visible}
+  #deck{transform:none!important;width:1280px;height:auto}
+  #prog,#hud,#notes,#grid{display:none!important}
+  .slide{position:relative;display:flex!important;inset:auto;width:1280px;height:720px;page-break-after:always;break-after:page}
+  #deck::before{position:absolute}
+}
+</style></head>
+<body>
+<div id="prog"></div>
+<div id="stage"><div id="deck">
+<section class="slide s-title" data-index="1"><div class="title-band"><div class="title-kicker">CIS 3370 Intrusion Detection Systems</div><h1 class="title-main">Stage 1: Generate the Data an IDS Would Read</h1><div class="title-meta">Session 5 &nbsp;·&nbsp; M2 - Building the Pipeline, Stage by Stage</div><div class="title-sub">Outcomes: CO1, CO3 &nbsp;·&nbsp; Dr. Gonzalo D Parra</div></div><div class="s-num">1</div></section>
+<section class="slide s-objectives" data-index="2"><h1 class="s-title">Learning Objectives</h1><div class="s-body"><p class="lead">By the end of this session you will be able to:</p><ol class="objectives"><li>- Measure a baseline of your own machine, at the host and on the network, and say what normal looks like in numbers.</li><li>- Capture one minute of your own traffic and read it back without opening a graphical tool.</li><li>- Run a scan against your own machine and find it twice, in the baseline and in the capture.</li><li>- State what a sensor would have to record for that scan to be detectable by something other than you.</li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">2</div></section>
+<section class="slide s-section" data-index="3"><h1 class="s-title vis-hidden">You Cannot Detect What You Never Recorded</h1><div class="s-body"><ul>
+<li>Every stage after this one reads data. This is the stage that makes it.</li>
+<li>Today the data is yours: your machine, your traffic, your scan.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">3</div></section>
+<section class="slide s-diagram" data-index="4"><h1 class="s-title">The Pipeline, and the Stage You Own Today</h1><div class="s-body"><figure class="diagram" data-spec="dc845e2d0ed1"><svg aria-labelledby="dt-dc845e2d0ed1" aria-describedby="dc-dc845e2d0ed1" viewBox="0 0 1634 244" width="1634" height="244" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace"><title id="dt-dc845e2d0ed1">The eight pipeline stages, with generation first</title><defs><marker id="ah" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#c9ccd1"/></marker><marker id="ahs" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#cb333b"/></marker></defs><text x="22" y="24" fill="#e8565f" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700">The eight pipeline stages, with generation first</text><line x1="56.0" y1="133.0" x2="1578.0" y2="133.0" stroke="#cb333b" stroke-width="3" marker-end="url(#ah)"/><circle cx="131" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="131" cy="133" r="3.5" fill="#cb333b"/><text x="131.0" y="107.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">1</text><rect x="56" y="38" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="131.0" y="56.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Generate</text><text x="131.0" y="75.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">today</text><line x1="131.0" y1="124.0" x2="131.0" y2="93.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="327" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="327" cy="133" r="3.5" fill="#cb333b"/><text x="327.0" y="167.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">2</text><rect x="252" y="173" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="327.0" y="191.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Collect</text><text x="327.0" y="210.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">Zeek, Suricata</text><line x1="327.0" y1="142.0" x2="327.0" y2="173.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="523" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="523" cy="133" r="3.5" fill="#cb333b"/><text x="523.0" y="107.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">3</text><rect x="448" y="38" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="523.0" y="56.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Structure</text><text x="523.0" y="75.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">fields, not text</text><line x1="523.0" y1="124.0" x2="523.0" y2="93.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="719" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="719" cy="133" r="3.5" fill="#cb333b"/><text x="719.0" y="167.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">4</text><rect x="644" y="173" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="719.0" y="191.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Store</text><text x="719.0" y="210.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">Elasticsearch</text><line x1="719.0" y1="142.0" x2="719.0" y2="173.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="915" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="915" cy="133" r="3.5" fill="#cb333b"/><text x="915.0" y="107.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">5</text><rect x="840" y="38" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="915.0" y="56.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Preprocess</text><text x="915.0" y="75.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">encode, scale</text><line x1="915.0" y1="124.0" x2="915.0" y2="93.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="1111" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="1111" cy="133" r="3.5" fill="#cb333b"/><text x="1111.0" y="167.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">6</text><rect x="1036" y="173" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="1111.0" y="191.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Train</text><text x="1111.0" y="210.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">the detector</text><line x1="1111.0" y1="142.0" x2="1111.0" y2="173.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="1307" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="1307" cy="133" r="3.5" fill="#cb333b"/><text x="1307.0" y="107.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">7</text><rect x="1232" y="38" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="1307.0" y="56.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Alert</text><text x="1307.0" y="75.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">tell a human</text><line x1="1307.0" y1="124.0" x2="1307.0" y2="93.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/><circle cx="1503" cy="133" r="9" fill="#0d0e10" stroke="#cb333b" stroke-width="3"/><circle cx="1503" cy="133" r="3.5" fill="#cb333b"/><text x="1503.0" y="167.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="11" font-weight="700" text-anchor="middle">8</text><rect x="1428" y="173" width="150" height="55" rx="8" fill="#2c2f34" stroke="#5a3034" stroke-width="1.4"/><text x="1503.0" y="191.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="middle">Dashboard</text><text x="1503.0" y="210.0" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">decide</text><line x1="1503.0" y1="142.0" x2="1503.0" y2="173.0" stroke="#5a3034" stroke-width="1.4" stroke-dasharray="6 5"/></svg><figcaption id="dc-dc845e2d0ed1">Each session is one stage. Everything downstream inherits whatever this stage failed to record.</figcaption></figure></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">4</div></section>
+<section class="slide s-content" data-index="5"><h1 class="s-title">Three Files You Will Be Holding at the End</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><code>host-baseline.tsv</code>, sixty seconds of your machine measured once a second.</span></li><li><span class="step-n">2</span><span class="step-t"><code>net-baseline.tsv</code>, the same minute measured at the network interface.</span></li><li><span class="step-n">3</span><span class="step-t"><code>capture.pcap</code>, one minute of your own packets, and a scan you ran on purpose.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">Keep all three in one folder. Every prompt today assumes you are working in it, and Stage 2 reads them again.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">5</div></section>
+<section class="slide s-content" data-index="6"><h1 class="s-title">A Baseline Is Normal, Measured</h1><div class="s-body"><ul>
+<li>Anomaly detection compares now against normal. Someone has to define normal, with numbers.</li>
+<li>A baseline is a recording of a system doing nothing interesting, so that interesting becomes visible.</li>
+</ul>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>Baseline.</strong> A set of measurements taken while the system is behaving as usual, kept so later measurements can be compared against it.</span></div>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">Without a baseline, every alert is an opinion. With one, an alert is a comparison, and a comparison can be argued with.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">6</div></section>
+<section class="slide s-content" data-index="7"><div class="s-ai"><button type="button" class="ai-btn" data-i="7">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="7">Copy all steps so far</button></div><h1 class="s-title">Set Up the Folder and the Report</h1><div class="s-body"><ul>
+<li>One folder for today. One report file that grows for the rest of the course.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">7</div></section>
+<section class="slide s-section" data-index="8"><h1 class="s-title vis-hidden">The Host Baseline</h1><div class="s-body"><ul>
+<li>What the machine itself is doing: who is logged in, how much is running, how hard it is working.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">8</div></section>
+<section class="slide s-content" data-index="9"><h1 class="s-title">Nine Columns, and Why Each One Earns Its Place</h1><div class="s-body"><table class="s-table"><thead><tr><th>Column</th><th>What it answers</th><th>Why an IDS cares</th></tr></thead><tbody><tr><td><code>date</code></td><td>when the sample was taken</td><td>every later join is on time</td></tr><tr><td><code>hostname</code></td><td>which machine</td><td>one file per machine stops being ambiguous</td></tr><tr><td><code>users</code></td><td>how many are logged in</td><td>a second session at 3 AM is a question</td></tr><tr><td><code>processes</code></td><td>how much is running</td><td>a jump is a payload or a build</td></tr><tr><td><code>failed_logins</code></td><td>how many rejected sign-ins</td><td>the oldest signal there is</td></tr><tr><td><code>uptime_s</code></td><td>how long since boot</td><td>a reboot resets everything else</td></tr><tr><td><code>load_1m</code>, <code>load_5m</code>, <code>load_15m</code></td><td>how busy, over three windows</td><td>slow drift shows in the long window first</td></tr></tbody></table></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">9</div></section>
+<section class="slide s-diagram" data-index="10"><h1 class="s-title">The Measurement Is the Constant, the Command Is the Variable</h1><div class="s-body"><figure class="diagram" data-spec="38e1a0794c7b"><svg aria-labelledby="dt-38e1a0794c7b" aria-describedby="dc-38e1a0794c7b" viewBox="0 0 922 336" width="922" height="336" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace"><title id="dt-38e1a0794c7b">The same four measurements, three operating systems, different commands</title><defs><marker id="ah" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#c9ccd1"/></marker><marker id="ahs" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#cb333b"/></marker></defs><text x="22" y="24" fill="#e8565f" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700">The same four measurements, three operating systems, different commands</text><rect x="22" y="40" width="878" height="50" rx="8" fill="#26191b" stroke="#5a3034" stroke-width="1"/><text x="325.0" y="69.0" fill="#cb333b" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="14" font-weight="700" text-anchor="middle">Linux</text><text x="555.0" y="69.0" fill="#cb333b" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="14" font-weight="700" text-anchor="middle">macOS</text><text x="785.0" y="69.0" fill="#cb333b" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="14" font-weight="700" text-anchor="middle">Windows</text><text x="34.0" y="122.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Logged-in users</text><text x="325.0" y="122.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">who</text><text x="555.0" y="122.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">who</text><text x="785.0" y="122.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">query user</text><rect x="22" y="146" width="878" height="56" fill="#1c1517" opacity="0.5"/><text x="34.0" y="178.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Processes</text><text x="325.0" y="178.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">ps -e</text><text x="555.0" y="178.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">ps -A</text><text x="785.0" y="178.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">Get-Process</text><text x="34.0" y="234.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Uptime</text><text x="325.0" y="234.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">/proc/uptime</text><text x="555.0" y="234.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">sysctl kern.boottime</text><text x="785.0" y="234.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">Get-Uptime</text><rect x="22" y="258" width="878" height="56" fill="#1c1517" opacity="0.5"/><text x="34.0" y="290.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Load</text><text x="325.0" y="290.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">uptime</text><text x="555.0" y="290.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">uptime</text><text x="785.0" y="290.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">Get-Counter</text><line x1="210" y1="40" x2="210" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="440" y1="40" x2="440" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="670" y1="40" x2="670" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="900" y1="40" x2="900" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="22" y1="40" x2="22" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><rect x="22" y="40" width="878" height="274" rx="8" fill="none" stroke="#5a3034" stroke-width="1"/></svg><figcaption id="dc-38e1a0794c7b">The column name in your log file stays the same on all three. That is the whole idea behind a common schema.</figcaption></figure></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
+<section class="slide s-content" data-index="11"><div class="s-ai"><button type="button" class="ai-btn" data-i="11">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="11">Copy all steps so far</button></div><h1 class="s-title">Write the Collector for the Machine You Actually Have</h1><div class="s-body"><ul>
+<li>You are not writing this by hand. You are telling an agent what to measure, and checking what it wrote.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">11</div></section>
+<section class="slide s-content" data-index="12"><div class="s-ai"><button type="button" class="ai-btn" data-i="12">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="12">Copy all steps so far</button></div><h1 class="s-title">Read the File Back Before You Trust It</h1><div class="s-body"><ul>
+<li>The file you just made is now data. Treat it exactly as you treated NSL-KDD.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">12</div></section>
+<section class="slide s-content" data-index="13"><div class="s-ai"><button type="button" class="ai-btn" data-i="13">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="13">Copy all steps so far</button></div><h1 class="s-title">What Moved While You Watched</h1><div class="s-body"><ul>
+<li>A baseline with no variation is a broken script. Something always moves.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">13</div></section>
+<section class="slide s-content" data-index="14"><h1 class="s-title">Failed Logins Live Somewhere Different on Every System</h1><div class="s-body"><ul>
+<li>The one column most likely to read <code>NA</code> in your file, on every operating system, for a different reason each time.</li>
+</ul>
+<table class="s-table"><thead><tr><th>System</th><th>Where the record is</th><th>What stops you reading it</th></tr></thead><tbody><tr><td>Linux</td><td><code>/var/log/auth.log</code> or <code>journalctl</code></td><td>file permissions, so it needs elevation</td></tr><tr><td>macOS</td><td>the unified log, via <code>log show</code></td><td>the predicate syntax, and a slow query</td></tr><tr><td>Windows</td><td>Security event log, ID 4625</td><td>auditing may be off by default</td></tr></tbody></table>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">Do not turn on auditing, change log permissions, or elevate on a machine you do not own. If the value is not readable, <code>NA</code> is the honest answer and the report says why.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">14</div></section>
+<section class="slide s-section" data-index="15"><h1 class="s-title vis-hidden">The Network Baseline</h1><div class="s-body"><ul>
+<li>What the machine is doing on the wire: what is listening, what is connected, what is moving.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">15</div></section>
+<section class="slide s-content" data-index="16"><h1 class="s-title">Ports, Connections, Bytes, Packets, Drops</h1><div class="s-body"><table class="s-table"><thead><tr><th>Column</th><th>What it answers</th><th>Why an IDS cares</th></tr></thead><tbody><tr><td><code>ports</code></td><td>how many sockets are listening</td><td>a new listener is a new way in</td></tr><tr><td><code>connections</code></td><td>how many are established</td><td>a jump is a scan, a sync, or an exfiltration</td></tr><tr><td><code>rx_kb</code>, <code>tx_kb</code></td><td>how much has moved, in and out</td><td>volume is the exfiltration signal</td></tr><tr><td><code>rx_pkts</code>, <code>tx_pkts</code></td><td>how many packets</td><td>many small packets is a different story than few large ones</td></tr><tr><td><code>rx_drop</code>, <code>tx_drop</code></td><td>how many were dropped</td><td>a sensor that drops packets is missing attacks</td></tr></tbody></table>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body"><code>rx_drop</code> is the column that tells you whether the rest of the pipeline can be trusted. A collector that drops packets is not measuring the network, it is measuring itself.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">16</div></section>
+<section class="slide s-content" data-index="17"><h1 class="s-title">Never Hardcode the Interface Name</h1><div class="s-body"><ul>
+<li><code>eth0</code> on one machine is <code>en0</code> on another and <code>Ethernet 2</code> on a third. A script that names one is a script that runs on one machine.</li>
+</ul>
+<div class="term"><div class="term-title">Ask the routing table which interface actually carries traffic</div><div class="term-body"><div class="t-line t-in"><span class="t-prompt">$</span> <span class="t-cmd">ip</span> <span class="t-args">route | grep default | awk &#x27;{print $5}&#x27;</span><span class="t-ann"># Linux</span></div><div class="t-line t-in"><span class="t-prompt">$</span> <span class="t-cmd">route</span> <span class="t-args">get default | awk &#x27;/interface:/ {print $2}&#x27;</span><span class="t-ann"># macOS</span></div></div></div>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">The rule generalises past interfaces: anything that differs between machines gets discovered at run time, never typed into the script.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">17</div></section>
+<section class="slide s-content" data-index="18"><h1 class="s-title">A Counter Counts Up Forever</h1><div class="s-body"><ul>
+<li><code>rx_bytes</code> is not how much traffic there is. It is how much there has been since boot.</li>
+</ul>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>Cumulative counter.</strong> A number that only increases. The quantity you want is the difference between two readings, divided by the time between them.</span></div>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">Plot a cumulative counter and you get a straight line going up, on every machine, always. It looks like a working chart and it says nothing.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">18</div></section>
+<section class="slide s-content" data-index="19"><div class="s-ai"><button type="button" class="ai-btn" data-i="19">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="19">Copy all steps so far</button></div><h1 class="s-title">Write and Run the Network Collector</h1><div class="s-body"></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">19</div></section>
+<section class="slide s-content" data-index="20"><div class="s-ai"><button type="button" class="ai-btn" data-i="20">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="20">Copy all steps so far</button></div><h1 class="s-title">Turn Counters Into Rates</h1><div class="s-body"><ul>
+<li>The reading is cumulative. The finding is the rate.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">20</div></section>
+<section class="slide s-section" data-index="21"><h1 class="s-title vis-hidden">The Packet Capture</h1><div class="s-body"><ul>
+<li>The baselines are summaries. A capture is the evidence they were summarising.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">21</div></section>
+<section class="slide s-content" data-index="22"><h1 class="s-title">A Log Is a Summary, a Capture Is the Evidence</h1><div class="s-body"><ul>
+<li>A log line is something a program decided to write down. A packet capture is what actually crossed the wire.</li>
+<li>Captures are large, they hold everything, and everything includes things you did not mean to record.</li>
+</ul>
+<div class="callout c-analogy"><span class="c-label">Analogy</span><span class="c-body">A log is the receipt. A capture is the security camera footage of the whole shop. One is easier to file; the other settles arguments.</span></div>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">Capture only on a machine you own, on your own connection. Never on the university network, never on a shared or public network, and never on someone else's device.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">22</div></section>
+<section class="slide s-content" data-index="23"><div class="s-ai"><button type="button" class="ai-btn" data-i="23">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="23">Copy all steps so far</button></div><h1 class="s-title">One Minute of Your Own Traffic</h1><div class="s-body"></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">23</div></section>
+<section class="slide s-content" data-index="24"><div class="s-ai"><button type="button" class="ai-btn" data-i="24">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="24">Copy all steps so far</button></div><h1 class="s-title">Read the Capture Back Without a Graphical Tool</h1><div class="s-body"></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">24</div></section>
+<section class="slide s-section s-kind-warn" data-index="25"><h1 class="s-title vis-hidden">Rules of Engagement, Before You Attack Anything</h1><div class="s-body"><ul>
+<li>Scan your own machine, from your own machine. Nothing else, on any network, at any time.</li>
+<li>Not the university network. Not a roommate's laptop. Not a device you administer at work.</li>
+<li>A scan is noisy and it is logged. On a network you do not own, it is a security incident with your name on it.</li>
+<li>If you are unsure whether something is in scope, it is not.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">25</div></section>
+<section class="slide s-content" data-index="26"><div class="s-ai"><button type="button" class="ai-btn" data-i="26">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="26">Copy all steps so far</button></div><h1 class="s-title">Scan Yourself</h1><div class="s-body"><ul>
+<li>The attack is a port scan against your own host, run from that same host, so no other machine sees it.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">26</div></section>
+<section class="slide s-content" data-index="27"><div class="s-ai"><button type="button" class="ai-btn" data-i="27">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="27">Copy all steps so far</button></div><h1 class="s-title">Find the Scan Twice</h1><div class="s-body"><ul>
+<li>If you cannot find your own scan in your own data, you would never find someone else's.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">27</div></section>
+<section class="slide s-content" data-index="28"><div class="s-ai"><button type="button" class="ai-btn" data-i="28">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="28">Copy all steps so far</button></div><h1 class="s-title">Put a Number on the Signal</h1><div class="s-body"><ul>
+<li>"It spiked" is not a finding. A finding has a quiet value, a loud value, and a ratio.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">28</div></section>
+<section class="slide s-content" data-index="29"><h1 class="s-title">What a Detector Would Have Needed</h1><div class="s-body"><ul>
+<li>You found the scan because you knew when you ran it. A detector has no such advantage.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t">It needs the same measurement taken continuously, not once when you remembered.</span></li><li><span class="step-n">2</span><span class="step-t">It needs a quiet baseline to compare against, which is the file you just made.</span></li><li><span class="step-n">3</span><span class="step-t">It needs the packets turned into records with names, which is Stage 2 and Stage 3.</span></li><li><span class="step-n">4</span><span class="step-t">It needs a threshold someone chose on purpose, which is the Alert session.</span></li></ol>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">Next session replaces your two scripts with Zeek and Suricata, which do this continuously and write records with field names. Everything you measured by hand today, they measure by default.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">29</div></section>
+<section class="slide s-content" data-index="30"><div class="s-ai"><button type="button" class="ai-btn" data-i="30">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="30">Copy all steps so far</button></div><h1 class="s-title">The Loop, on Data You Made Yourself</h1><div class="s-body"><ul>
+<li>Same four sentences as Lecture 4, this time about your own machine.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Analysis</strong>: what you measured, and the number you got.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Issue</strong>: what is wrong, missing or misleading in that measurement.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Tools</strong>: what you used to see it.</span></li><li><span class="step-n">4</span><span class="step-t"><strong>Solution</strong>: what you changed, and what you deliberately did not.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">30</div></section>
+<section class="slide s-activity" data-index="31"><h1 class="s-title">In-Class Activity</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Run the host collector for sixty seconds and report how many rows you got. If it is not sixty, find out why before you fix it.</span></li><li><span class="step-n">2</span><span class="step-t">Name one column in your file that reads NA, and say in one sentence what would have to be true for it to hold a number.</span></li><li><span class="step-n">3</span><span class="step-t">Run the scan, then find the second it started in net-baseline.tsv without looking at your notes.</span></li><li><span class="step-n">4</span><span class="step-t">Compute the ratio for one column between the quiet minute and the scan minute, and read the sentence aloud.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">31</div></section>
+<section class="slide s-exit" data-index="32"><h1 class="s-title">Exit Ticket</h1><div class="s-body"><ul>
+<li>Which of your two baseline files would show a port scan more clearly, and why?</li>
+<li>Name one thing a packet capture can answer that your network baseline cannot.</li>
+<li>Your <code>failed_logins</code> column reads NA. Is that a bug in the script, or a fact about the machine? How would you tell?</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">32</div></section>
+</div></div>
+<div id="hud"></div>
+<div id="notes"><h3>Speaker Notes (press N to hide)</h3><div id="notes-body"></div></div>
+<div id="grid"></div>
+<script>window.__NOTES__="";
+window.__PROMPTS__={"7": {"title": "Set Up the Folder and the Report", "text": "Make a folder called ids-pipeline in my home directory and work in it from now on.\n\nIn it, create a file named ids-report.html. It is a single self-contained HTML page:\ninline CSS, no external files, and it must open by double-click with no network. Give it\nlang=\"en\", a title, an <h1> reading \"Building an IDS: what I did\", a line for my name,\nand a \"Progress\" table with the columns Step, Topic, Status and What I found. Put the\ncomment \"<!-- PROGRESS ROWS: add each new row above this line -->\" as the last line\ninside the table body, and the comment \"<!-- SECTIONS: add each new section above this\nline -->\" as the last thing before </body>. If a file named nsl-kdd-report.html exists\nanywhere in my home folder, add a link to it near the top under the heading \"Earlier\nsessions\".\n\nFrom now on, after every step we do, add to this file without being asked: one <section>\nabove the SECTIONS marker holding the step number and title as an <h2>, a one-paragraph\nplain-language explanation, the exact commands you ran, the exact output they produced,\nany figure as inline SVG, and one line starting \"What this tells me:\". Add a matching row\nabove the PROGRESS ROWS marker with the status done. Show me the file after each update."}, "11": {"title": "Write the Collector for the Machine You Actually Have", "text": "Detect which operating system I am on and print it. Then write a script that samples my\nmachine once a second for sixty seconds and appends one tab-separated row per sample to\nhost-baseline.tsv, with a header row first. The columns, in this order: date, hostname,\nusers, processes, failed_logins, uptime_s, load_1m, load_5m, load_15m. Use the commands\nthat are correct for my operating system, not for a different one, and put a comment\nabove each measurement saying which command you used and why. If a measurement is not\navailable on my system, write the literal string NA rather than a zero, and tell me which\none and why. Show me the script, then run it, and show me the first three lines of the\nfile.\nThen update ids-report.html for this step, as agreed."}, "12": {"title": "Read the File Back Before You Trust It", "text": "Load host-baseline.tsv with pandas and answer the first four questions about it: how many\nrows, what columns, what type is each column, and what does each column contain. Print the\nfirst timestamp, the last timestamp, and the number of seconds between them. Say in one\nline whether the number of rows matches the number of seconds, and if it does not, say\nwhat you think happened.\nThen update ids-report.html for this step, as agreed."}, "13": {"title": "What Moved While You Watched", "text": "For every numeric column in host-baseline.tsv print the minimum, the median, the maximum\nand the number of distinct values. Then name the column that varied most and the column\nthat did not vary at all. For each column that did not vary, say whether that is expected\nover sixty seconds or a sign the measurement is not being collected.\nThen update ids-report.html for this step, as agreed."}, "19": {"title": "Write and Run the Network Collector", "text": "Write a second script that samples my network interface once a second for sixty seconds\nand appends tab-separated rows to net-baseline.tsv with a header first. Columns in this\norder: date, hostname, interface, ports, connections, rx_kb, tx_kb, rx_pkts, tx_pkts,\nrx_drop, tx_drop. Discover the primary interface from the default route at run time and\nprint which one it chose. Use the modern socket tool for my operating system rather than\nnetstat, and say in a comment which one you used. Run it while I browse a few websites,\nthen show me the first three lines and the last three lines.\nThen update ids-report.html for this step, as agreed."}, "20": {"title": "Turn Counters Into Rates", "text": "Load net-baseline.tsv with pandas. Take the difference between consecutive rows for\nrx_kb, tx_kb, rx_pkts and tx_pkts, and add those four as new columns ending in _per_s.\nPrint the median and the maximum of each new column. Then plot rx_kb over time twice, once\nas the raw counter and once as the per-second rate, save both as SVG next to my report,\nand embed them. Say in one line what the raw plot shows and what the rate plot shows.\nThen update ids-report.html for this step, as agreed."}, "23": {"title": "One Minute of Your Own Traffic", "text": "Find out whether a packet capture tool is available on my machine: tcpdump, tshark or\ndumpcap on macOS and Linux, pktmon or dumpcap on Windows. Tell me which one you found and\nwhat elevation it needs. Then capture sixty seconds of traffic on my primary interface to\ncapture.pcap while I load a few web pages, and tell me the file size when it finishes. If\nno capture tool is available, do not install anything: say so, and instead list what the\nZeek logs in the course bundle would have recorded for the same minute.\nThen update ids-report.html for this step, as agreed."}, "24": {"title": "Read the Capture Back Without a Graphical Tool", "text": "Read capture.pcap from the command line and print four things: the total packet count, the\ntime of the first and last packet, the ten busiest source and destination address pairs by\npacket count, and the share of packets per protocol. Do not open a graphical tool. Then say\nin one line which of those four answers you could also have got from net-baseline.tsv, and\nwhich needed the packets.\nThen update ids-report.html for this step, as agreed."}, "26": {"title": "Scan Yourself", "text": "Check whether nmap is installed and tell me. Then run a scan of the most common ports\nagainst my own machine at 127.0.0.1, and if my machine has a private address on my home\nnetwork, scan that address too. Print the exact command you ran and the full output. Note\nthe wall-clock time you started and finished the scan, in the same format as the date\ncolumn in my baseline files. If nmap is not installed, write a short script that tries to\nopen each of the first 1024 ports on 127.0.0.1 and reports which answered, and say how\nthat differs from what nmap would have done.\nThen update ids-report.html for this step, as agreed."}, "27": {"title": "Find the Scan Twice", "text": "Run the network collector again for sixty seconds, and run the scan in the middle of that\nminute, so net-baseline.tsv covers it. Then load the new file and find the scan: print the\nrows where connections or ports move away from the quiet baseline, and say which column\nmoved first and by how much. Then find the same seconds in capture.pcap and print how many\npackets were sent to how many distinct ports in that window.\nThen update ids-report.html for this step, as agreed."}, "28": {"title": "Put a Number on the Signal", "text": "Compare the quiet minute in my first net-baseline.tsv against the minute containing the\nscan. For connections, ports, tx_pkts_per_s and rx_pkts_per_s, print the median while\nquiet, the maximum during the scan, and the ratio between them, as a small table. Then\nwrite one sentence in the shape \"during the scan, X went from A to B, which is C times\nhigher\".\nThen update ids-report.html for this step, as agreed."}, "30": {"title": "The Loop, on Data You Made Yourself", "text": "Read ids-report.html and pick the one measurement in it that you trust least. Write the\nfour sentences Analysis, Issue, Tools, Solution about it, and add them to the report as a\nnew section titled \"The measurement I trust least\". Be specific about why: name the column,\nthe command that produced it, and what would have to change for you to trust it.\nThen update ids-report.html for this step, as agreed."}};
+window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems. We are working through session 5, \"Stage 1: Generate the Data an IDS Would Read\". You are running the code, not describing it: do each step, show me the commands you ran and the real output they produced, and keep any explanation to a line or two. I am a beginner, so use plain words.";</script>
+<script>
+(function(){
+  var deck=document.getElementById('deck'), stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var prog=document.getElementById('prog'), hud=document.getElementById('hud');
+  var notes=document.getElementById('notes'), grid=document.getElementById('grid');
+  var i=0, N=slides.length;
+  function fit(){
+    var pad=0, sw=(window.innerWidth-pad)/1280, sh=(window.innerHeight-pad)/720;
+    var s=Math.min(sw,sh); deck.style.transform='scale('+s+')';
+  }
+  function show(n){
+    i=Math.max(0,Math.min(N-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i);});
+    prog.style.width=((i+1)/N*100)+'%';
+    // Notes are stripped from the published deck, where N is guarded to do nothing, so the
+    // hint drops the key rather than inviting a press that answers with silence.
+    hud.textContent=(i+1)+' / '+N+'   [←→] nav  '+(window.__NOTES__?'[N]otes  ':'')+'[G]rid  [P]rint';
+    location.hash=(i+1);
+  }
+  function next(){show(i+1);} function prev(){show(i-1);}
+  window.addEventListener('resize',fit);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){show(0);} else if(e.key==='End'){show(N-1);}
+    // Only when there are notes to show. The published deck has them stripped to an
+    // empty string, and N used to open a panel containing nothing but its own title,
+    // which reads to a student as something broken rather than something withheld.
+    else if(e.key==='n'||e.key==='N'){ if(window.__NOTES__) notes.classList.toggle('show'); }
+    else if(e.key==='g'||e.key==='G'){grid.classList.toggle('show');}
+    else if(e.key==='p'||e.key==='P'){window.print();}
+    else if(e.key==='Escape'){grid.classList.remove('show');}
+    else if(/^[0-9]$/.test(e.key)){/* number jump buffer */ jump(e.key);}
+  });
+  // click nav
+  // Clicking the stage advances. Controls inside a slide must opt out, or pressing
+  // one both fires the control and skips the slide it belongs to.
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('#grid')||e.target.closest('.ai-btn'))return; next(); });
+  // number jump
+  var buf=''; var bt;
+  function jump(d){buf+=d; clearTimeout(bt); bt=setTimeout(function(){var n=parseInt(buf,10); if(n)show(n-1); buf='';},600);}
+  // grid
+  slides.forEach(function(s,k){
+    var g=document.createElement('div'); g.className='g';
+    var h=s.querySelector('.s-title,.title-main'); var t=s.querySelector('.tag');
+    g.innerHTML='<div class="gt">'+(t?t.textContent:'')+'</div><div class="gh">'+
+      (h?h.textContent:('Slide '+(k+1)))+'</div><div class="gn">'+(k+1)+'</div>';
+    g.addEventListener('click',function(ev){ev.stopPropagation();grid.classList.remove('show');show(k);});
+    grid.appendChild(g);
+  });
+  // init from hash
+  var h=parseInt((location.hash||'').replace('#',''),10);
+  fit(); show(isNaN(h)?0:h-1);
+})();
+</script>
+<script>
+(function(){
+  var nb=document.getElementById('notes-body');
+  if(window.__NOTES__){ nb.textContent=window.__NOTES__; }
+
+  // Copy a step, or every step up to here, for pasting into Claude. No network call:
+  // students are on the free desktop app, so the deck's job is to hand over text.
+  var P = window.__PROMPTS__ || {}, CTX = window.__DECK_CONTEXT__ || '';
+  var NL = String.fromCharCode(10);   // HTML_SHELL is a non-raw Python string, so a
+                                      // backslash-n here is eaten at import time and
+                                      // leaves an unterminated JS string literal.
+  function build(upto, all){
+    var keys = Object.keys(P).map(Number).sort(function(a,b){return a-b;});
+    var take = all ? keys.filter(function(k){return k <= upto;}) : [upto];
+    // The single-step copy assumes a chat that already has context; only the
+    // cumulative copy, meant for a fresh or reset chat, carries the preamble.
+    var out = (all && CTX) ? [CTX, ''] : [];
+    take.forEach(function(k, i){
+      if(!P[k]) return;
+      out.push((all ? 'Step ' + (i+1) + ' - ' : '') + P[k].title);
+      out.push(P[k].text, '');
+    });
+    return out.join(NL).trim();
+  }
+  function flash(btn, msg){
+    var old = btn.textContent; btn.textContent = msg;
+    setTimeout(function(){ btn.textContent = old; }, 1400);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.ai-btn');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var txt = build(parseInt(b.dataset.i, 10), b.classList.contains('ai-all'));
+    // The modern API needs a secure context and a permission that a projector browser
+    // or a sandboxed frame may refuse, so a rejection falls through to the old method
+    // rather than telling the student to press a key that would copy nothing.
+    function legacy(){
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(err) { ok = false; }
+      document.body.removeChild(ta);
+      flash(b, ok ? 'Prompt copied' : 'Copy blocked');
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Prompt copied'); }, legacy);
+    } else { legacy(); }
+  });
+})();
+</script>
+</body></html>
