@@ -93,7 +93,8 @@ pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:
 .diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans)}
 .diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
 /* footer + slide number */
-.s-ai{position:absolute;right:64px;bottom:44px;display:flex;gap:8px;z-index:5}
+.s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
+
 .ai-btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;
   padding:7px 14px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer}
 .ai-btn:hover{border-color:var(--red-lt);color:var(--red-lt)}
@@ -320,7 +321,9 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
   function build(upto, all){
     var keys = Object.keys(P).map(Number).sort(function(a,b){return a-b;});
     var take = all ? keys.filter(function(k){return k <= upto;}) : [upto];
-    var out = CTX ? [CTX, ''] : [];
+    // The single-step copy assumes a chat that already has context; only the
+    // cumulative copy, meant for a fresh or reset chat, carries the preamble.
+    var out = (all && CTX) ? [CTX, ''] : [];
     take.forEach(function(k, i){
       if(!P[k]) return;
       out.push((all ? 'Step ' + (i+1) + ' - ' : '') + P[k].title);
@@ -348,10 +351,10 @@ window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems.
       var ok = false;
       try { ok = document.execCommand('copy'); } catch(err) { ok = false; }
       document.body.removeChild(ta);
-      flash(b, ok ? 'Copied' : 'Copy blocked');
+      flash(b, ok ? 'Prompt copied' : 'Copy blocked');
     }
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Copied'); }, legacy);
+      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Prompt copied'); }, legacy);
     } else { legacy(); }
   });
 })();
