@@ -70,7 +70,7 @@
   </header>
 
   <div class="callout">
-    Run this self-audit before presentation day. Check each item you have verified. This checklist mirrors the grading criteria for Build, Attack, and Defend: fix anything that is both a rubric line and currently unchecked before you polish anything else. Final deliverables (wiki, repo, board, presentation) are not accepted late.
+    Run this self-audit before presentation day. Check each item you have verified. This checklist mirrors the grading criteria for the reproduction: fix anything that is both a rubric line and currently unchecked before you polish anything else. Final deliverables (wiki, repo, board, presentation) are not accepted late.
   </div>
 
   <div class="counter" id="counter">
@@ -88,45 +88,47 @@
   var NS = "cis3370-capstone-readiness:";
 
   var sections = [
-    { title: "Build: Environment", items: [
-      { id: "env-rebuilds", title: "The environment builds from documented steps.", desc: "Someone following the wiki setup steps can rebuild every VM and virtual network from scratch.",
-        verify: "Have a teammate who did not build it stand up the environment using only the wiki runbook, and confirm each VM, network segment, firewall, and service comes up as documented." },
-      { id: "arch-diagram", title: "Architecture diagram matches the running environment.", desc: "The committed diagram shows the real VMs, networks, firewalls, and key services, including trust boundaries.",
-        verify: "Compare the diagram in the repo against the running environment; every host, segment, and boundary on the diagram exists and every real one is drawn." },
-      { id: "services-up", title: "All key services are up and reachable as designed.", desc: "The services central to the scenario run, and segmentation allows only the intended paths.",
-        verify: "From each network segment, confirm you can reach what you should and cannot reach what you should not." }
+    { title: "The Paper", items: [
+      { id: "claim-stated", title: "The claim you are reproducing is written in one sentence.", desc: "Not the paper's topic: the specific number or result your team is trying to get again.",
+        verify: "Read your sentence to someone outside the team. They should be able to say what number you are chasing and on what data, without asking a follow-up question." },
+      { id: "paper-numbers", title: "The paper's own numbers are recorded in your repository.", desc: "Dataset, split, metric and value, copied exactly as the paper states them, with the table or section they came from.",
+        verify: "Open your notes and the paper side by side. Every number you plan to compare against appears in both, with a citation to where it is in the paper." }
     ]},
-    { title: "Attack: Threat Demonstration", items: [
-      { id: "attack-reproducible", title: "The threat demonstration is reproducible.", desc: "The attack against the undefended environment can be run again on demand, not just once by luck.",
-        verify: "Run the attack end to end at least twice from your documented steps and confirm it succeeds both times." },
-      { id: "attack-evidence", title: "Attack evidence is captured.", desc: "Screenshots, captures, or logs prove the attack succeeded before defenses were applied.",
-        verify: "Open the evidence stored in the repo or wiki and confirm it clearly shows the successful attack against the undefended environment." }
+    { title: "The Data", items: [
+      { id: "data-obtained", title: "You have the data the paper used, or a documented substitute.", desc: "Downloaded, unpacked, and loadable by a script rather than by hand.",
+        verify: "A teammate runs your loading script on a clean machine and gets the same row and column counts you report." },
+      { id: "data-described", title: "The data is described the way this course describes data.", desc: "Rows, columns, types, values, class balance, and anything that surprised you.",
+        verify: "Your report answers the first four questions and states the class balance, with the code that produced each number." }
     ]},
-    { title: "Defend: Controls and Verification", items: [
-      { id: "defenses-implemented", title: "Each defense is implemented.", desc: "Every control named in the proposal (or an approved revision) is actually in place in the environment.",
-        verify: "Walk the environment and confirm each control exists and is enabled, not just planned." },
-      { id: "defenses-verified", title: "Each defense is verified with before/after proof.", desc: "Re-running the attack shows it blocked or reduced, with the before/after documented.",
-        verify: "Re-run the threat demonstration against the defended environment and capture the before/after evidence showing the control working." }
+    { title: "The Reproduction", items: [
+      { id: "baseline-first", title: "A baseline runs and is scored before the paper's method.", desc: "The floor to beat, so every later number means something.",
+        verify: "Your report shows the do-nothing or simple-model score on the same split you use for the paper's method." },
+      { id: "method-implemented", title: "The paper's method runs end to end.", desc: "Preprocessing, training and evaluation, in one path someone else can run.",
+        verify: "One documented command reproduces your headline number from raw data, on a machine that is not yours." },
+      { id: "numbers-compared", title: "Your numbers sit beside the paper's, in one table.", desc: "Same metric, same split, stated honestly whether they match or not.",
+        verify: "The table has three columns: what the paper reported, what you got, and the difference. No cell is empty." },
+      { id: "gaps-documented", title: "Every gap between your result and the paper's has a stated reason.", desc: "A missing detail, a different dataset version, a hyperparameter the paper did not give, or an error you found.",
+        verify: "For each difference larger than you can explain by randomness, your report names a cause or says plainly that you could not determine one." }
     ]},
     { title: "Documentation and Governance", items: [
-      { id: "wiki-runbook", title: "The wiki runbook is complete.", desc: "Architecture diagrams, setup steps, and test results are all in the GitHub Wiki, with no TODO markers left.",
-        verify: "Open the wiki and walk each page: architecture, setup, and test results are present, and no stubs or TODO markers remain." },
-      { id: "readme-frontdoor", title: "The README is the front door.", desc: "The repo is organized and the README explains the project, the scenario, and how to navigate the work.",
-        verify: "Open the repo cold and confirm the README orients a new reader to the mission, structure, and where to find the environment, attack, and defenses." },
-      { id: "contribution-table", title: "The Individual Contribution Summary Table is accurate.", desc: "A table at the bottom of the README records each member's contribution and matches the board and commit history.",
-        verify: "Confirm the table exists at the bottom of the README, names every member, and matches the Project board assignments and commit history." },
-      { id: "board-clean", title: "The Project board is clean.", desc: "Every issue has a milestone and an iteration, statuses are current, and the board tells the semester's real history.",
-        verify: "Open the board and confirm no stale cards, every issue carries a milestone and iteration, and the most recent activity is from this week." }
+      { id: "wiki-runbook", title: "The wiki runbook is complete.", desc: "Someone can go from an empty machine to your headline number using only the wiki.",
+        verify: "A teammate who did not write it follows it start to finish without asking questions, and reports where they got stuck." },
+      { id: "readme-front-door", title: "The README is the front door.", desc: "What the paper claimed, what you found, and where to look next, in the first screen.",
+        verify: "Someone opening the repository for the first time can state your result within a minute of reading." },
+      { id: "contrib-table", title: "The Individual Contribution Summary Table is accurate.", desc: "Who did what, matching the commit history and the board.",
+        verify: "Every row is supported by commits, issues or documents that carry that person's name." },
+      { id: "board-clean", title: "The Project board is clean.", desc: "No stale cards, and the closed ones say what was actually done.",
+        verify: "Every card is closed, in progress with a reason, or deliberately dropped with a note saying why." }
     ]},
     { title: "Presentation", items: [
-      { id: "dryrun-in-time", title: "The presentation dry-run is done within time.", desc: "The full talk was rehearsed end to end and lands within the 10 to 15 minute window.",
-        verify: "Time a complete run-through on the presentation machine and confirm it finishes between 10 and 15 minutes." },
-      { id: "demo-fallback", title: "A demo fallback is recorded.", desc: "A recorded demo exists in case the live demo fails, so the team can keep going.",
-        verify: "The README links the recording and a teammate has confirmed it plays and shows the attack blocked or the policy enforced." },
-      { id: "everyone-knows-part", title: "Every member knows which user stories they present.", desc: "Each member has a substantive speaking part tied to the user stories they contributed to.",
-        verify: "Confirm each member can name the user stories they own and will present them, so delivery credit is earned by all." }
+      { id: "dry-run", title: "The presentation dry-run is done within time.", desc: "Rehearsed end to end, with the clock running.",
+        verify: "You finished inside the limit at least once, without cutting the results section to do it." },
+      { id: "demo-fallback", title: "A demo fallback is recorded.", desc: "A video or screenshots, in case anything live fails on the day.",
+        verify: "The fallback plays from the presentation machine with no network." },
+      { id: "who-presents-what", title: "Every member knows which part they present.", desc: "Including the results, which nobody should be reading for the first time on stage.",
+        verify: "Each member can state their section and the one number they are responsible for explaining." }
     ]}
-  ];
+    ];
 
   var container = document.getElementById("checklist");
   var total = 0;
