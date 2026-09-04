@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIS 3370 Intrusion Detection Systems - Session 11: Evaluation: The Metrics That Matter When the Rare Class Is the Point</title>
+<style>
+:root{
+  --slate:#222222; --slate2:#2b2b2e; --panel:#2c2f34; --panel2:#333;
+  --ink:#f4f4f4; --muted:#b9bcc2; --line:#41444b;
+  --red:#cb333b; --red-dk:#89191c; --red-lt:#f08a91;
+  --grn:#7be39a; --amb:#e2a04a;
+  --mono:"JetBrains Mono","DejaVu Sans Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(--sans)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c0c0d}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center;background:var(--slate)}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:54px 64px 48px;background:var(--slate)}
+.slide.active{display:flex}
+.slide.s-title,.slide.s-section{align-items:flex-start;justify-content:center}
+/* accent rails */
+#deck::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--red);z-index:5}
+.s-title{background:var(--slate)}
+.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:19px}
+.s-table th{background:#26262a;color:#fff;text-align:left;font-weight:700;padding:8px 12px;border-bottom:2px solid var(--red)}
+.s-table td{padding:8px 12px;border-bottom:1px solid #34343a;color:#e8e8ea;vertical-align:top}
+.s-table tr:last-child td{border-bottom:none}
+.title-band{border-left:8px solid var(--red);padding:8px 0 8px 28px}
+.title-kicker{color:var(--red-lt);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:20px}
+.title-main{font-size:52px;line-height:1.08;margin:14px 0 18px;font-weight:800}
+.title-meta{font-size:22px;color:var(--ink);font-weight:600}
+.title-sub{font-size:17px;color:var(--muted);margin-top:8px}
+.s-title .s-num{display:none}
+/* section divider slides */
+.s-section .s-title{color:#fff}
+.s-section{background:var(--slate)}
+.s-section .s-body{font-size:35px;font-weight:800;line-height:1.28;letter-spacing:-.01em;background:var(--panel);border:1px solid var(--line);border-left:14px solid var(--red);border-radius:14px;padding:34px 40px 34px 38px;box-shadow:0 2px 10px rgba(0,0,0,.28);flex:0 0 auto;align-self:stretch;overflow:visible}
+.s-section .s-body ul{margin:0;padding-left:1.1em}
+.s-section .s-body li+li{margin-top:18px}
+/* Opt-in warning divider: {type=section kind=warn}. Amber matches the warn
+   callout, so it is used only where the content really is a rule or hazard. */
+.s-section.s-kind-warn .s-body{border-left-color:var(--amb)}
+.s-section.s-kind-warn .s-body ul{list-style:none;padding-left:0}
+.s-section.s-kind-warn .s-body li{position:relative;padding-left:1.7em}
+.s-section.s-kind-warn .s-body li::before{content:"\26A0";position:absolute;left:0;top:.02em;color:var(--amb);font-size:.9em;line-height:1.28}
+/* headers */
+.s-title.s-title{}
+h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
+.vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.lead{color:var(--muted);font-size:21px;margin:0 0 6px}
+ul,ol{margin:4px 0;padding-left:30px}
+li{margin:8px 0}
+li.sub{list-style:circle;color:var(--muted);font-size:20px}
+strong{color:#fff}
+em{color:var(--red-lt);font-style:normal;font-weight:600}
+/* A link on a dark slide left at the browser default is #0000EE, which is 1.85:1
+   against this background and fails AA outright. The house pink is 7.25:1, and the
+   underline stays so the link is not signalled by colour alone. */
+a{color:var(--red-lt);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+a:visited{color:var(--red-lt)}
+a:hover,a:focus-visible{color:#fff;text-decoration-thickness:2px}
+code{font-family:var(--mono);background:#15161a;color:#ffd9b0;padding:2px 7px;border-radius:5px;font-size:.9em}
+p{margin:6px 0}
+/* objectives */
+ol.objectives li,ol.steps li{margin:12px 0}
+/* step cards */
+ol.steps{list-style:none;padding:0;counter-reset:none}
+ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:12px 16px}
+.step-n{flex:none;width:34px;height:34px;border-radius:8px;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+.step-t{padding-top:4px}
+/* callouts */
+.callout{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--red);font-size:24px}
+.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:16px;padding-top:3px}
+.c-def{border-left-color:var(--red)} .c-def .c-label{color:var(--red-lt)}
+.c-note{border-left-color:#5a8fd6} .c-note .c-label{color:#8fb8ea}
+.c-warn{border-left-color:var(--amb)} .c-warn .c-label{color:var(--amb)}
+.c-tip{border-left-color:var(--grn)} .c-tip .c-label{color:var(--grn)}
+.c-analogy{border-left-color:#b48ad9} .c-analogy .c-label{color:#c6a6e6}
+.c-why{border-left-color:var(--red-lt)} .c-why .c-label{color:var(--red-lt)}
+/* terminal */
+.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:18px;margin:4px 0}
+.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:14px;border-bottom:1px solid #2a2c33}
+.term-body{padding:12px 16px;line-height:1.5}
+.t-line{white-space:pre-wrap;word-break:break-word}
+.t-in{color:#eaeaea}
+.t-prompt{color:var(--red-lt);font-weight:700;user-select:none}
+.t-cmd{color:#7fd1ff;font-weight:700}
+.t-args{color:#ffd9b0}
+.t-ann{color:#6f7681;font-style:italic;margin-left:10px}
+.t-out{color:#9fa6b0}
+/* code block */
+pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:17px;color:#d8dee9;overflow:auto;margin:4px 0}
+/* diagrams */
+.diagram-wrap{display:flex;justify-content:center;align-items:center;flex:1;min-height:0}
+/* The figure is a column that may not outgrow the space the slide gives it, and the
+   caption is the part that must never be the bit that gets pushed out: the drawing
+   can shrink, the sentence explaining it cannot. Without this the svg claimed its
+   full max-height and the caption spilled under whatever came next on the slide,
+   silently, looking correct in the source. */
+.diagram-wrap svg{max-width:100%;max-height:400px;height:auto;min-height:0;flex:0 1 auto}
+/* width:100% because a flex item is otherwise sized by its widest child, which here is
+   the caption: without it a figure came out as wide as its sentence happened to be, and
+   a short caption shrank the drawing until its labels could not be read from the room.
+   align-items keeps an engine figure, which carries its own width, centred inside it. */
+.diagram-wrap figure{margin:0;text-align:center;display:flex;flex-direction:column;
+  align-items:center;min-height:0;max-height:100%;width:100%}
+.diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
+.diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
+/* footer + slide number */
+.s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
+
+.ai-btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer}
+.ai-btn:hover{border-color:var(--red-lt);color:var(--red-lt)}
+.ai-btn:focus-visible{outline:3px solid var(--red-lt);outline-offset:2px}
+@media print{.s-ai{display:none}}
+.s-foot{position:absolute;left:64px;right:64px;bottom:16px;display:flex;justify-content:space-between;color:#6f7681;font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.s-num{position:absolute;right:22px;bottom:14px;color:#6f7681;font-size:13px;font-weight:700}
+.tag{position:absolute;right:64px;top:20px;color:var(--muted);font-size:13px}
+/* progress bar */
+#prog{position:fixed;top:0;left:0;height:5px;background:var(--red);z-index:50;transition:width .2s}
+/* HUD */
+#hud{position:fixed;bottom:10px;left:12px;color:#666;font-size:12px;font-family:var(--mono);z-index:40;user-select:none}
+/* speaker notes */
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:#0b0b0cee;border-top:3px solid var(--red);
+  color:#e6e6e6;padding:16px 22px;font-size:16px;line-height:1.5;display:none;z-index:45;white-space:pre-wrap}
+#notes.show{display:block}
+#notes h3{margin:0 0 8px;color:var(--red-lt);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+/* grid overview */
+#grid{position:fixed;inset:0;background:#0c0c0dfa;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:12px;padding:24px;overflow:auto}
+#grid.show{display:grid}
+#grid .g{border:1px solid var(--line);border-radius:8px;background:var(--slate);padding:10px;cursor:pointer;height:150px;overflow:hidden;position:relative}
+#grid .g:hover{border-color:var(--red)}
+#grid .g .gt{font-size:12px;color:var(--muted)}
+#grid .g .gh{font-size:15px;font-weight:700;margin-top:6px}
+#grid .g .gn{position:absolute;right:8px;bottom:6px;color:#666;font-size:11px}
+/* print: one slide per page */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{background:#fff;height:auto}
+  #stage{position:static;display:block;overflow:visible}
+  #deck{transform:none!important;width:1280px;height:auto}
+  #prog,#hud,#notes,#grid{display:none!important}
+  .slide{position:relative;display:flex!important;inset:auto;width:1280px;height:720px;page-break-after:always;break-after:page}
+  #deck::before{position:absolute}
+}
+</style></head>
+<body>
+<div id="prog"></div>
+<div id="stage"><div id="deck">
+<section class="slide s-title" data-index="1"><div class="title-band"><div class="title-kicker">CIS 3370 Intrusion Detection Systems</div><h1 class="title-main">Evaluation: The Metrics That Matter When the Rare Class Is the Point</h1><div class="title-meta">Session 11 &nbsp;·&nbsp; M3 - Detection, from Baselines to Models</div><div class="title-sub">Outcomes: CO2, CO3 &nbsp;·&nbsp; Dr. Gonzalo D Parra</div></div><div class="s-num">1</div></section>
+<section class="slide s-objectives" data-index="2"><h1 class="s-title">Learning Objectives</h1><div class="s-body"><p class="lead">By the end of this session you will be able to:</p><ol class="objectives"><li>- Read a confusion matrix in plain words and name the two errors it separates.</li><li>- Choose between precision and recall by naming who pays for each mistake.</li><li>- Show that one accuracy number can hide a model that never finds the attacks you care about.</li><li>- Move a threshold on purpose and state what you bought and what it cost.</li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">2</div></section>
+<section class="slide s-section" data-index="3"><h1 class="s-title vis-hidden">80 Percent of What</h1><div class="s-body"><ul>
+<li>Last session ended with a model at 0.805 on test. This session asks what that number is made of.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">3</div></section>
+<section class="slide s-content" data-index="4"><h1 class="s-title">Four Boxes, Four Plain Names</h1><div class="s-body"><table class="s-table"><thead><tr><th></th><th>The model said attack</th><th>The model said normal</th></tr></thead><tbody><tr><td><strong>It was an attack</strong></td><td>caught</td><td>missed</td></tr><tr><td><strong>It was normal</strong></td><td>false alarm</td><td>correctly ignored</td></tr></tbody></table>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>Confusion matrix.</strong> The four counts above. Every metric in this session is a ratio built from two of these boxes, and none of them tells you anything the four counts do not.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">4</div></section>
+<section class="slide s-content" data-index="5"><div class="s-ai"><button type="button" class="ai-btn" data-i="5">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="5">Copy all steps so far</button></div><h1 class="s-title">The Best Baseline, in Four Boxes</h1><div class="s-body"><ul>
+<li>The unlimited tree, on the test file:</li>
+</ul>
+<table class="s-table"><thead><tr><th></th><th>Said attack</th><th>Said normal</th></tr></thead><tbody><tr><td><strong>Was an attack</strong></td><td>8,810 caught</td><td>4,023 missed</td></tr><tr><td><strong>Was normal</strong></td><td>381 false alarms</td><td>9,330 correctly ignored</td></tr></tbody></table>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">0.805 accuracy is 8,810 plus 9,330 out of 22,544. The same number would appear if the model had caught fewer attacks and raised fewer false alarms, which is why a single number cannot be the report.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">5</div></section>
+<section class="slide s-content" data-index="6"><h1 class="s-title">Two Questions People Confuse</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Precision</strong>: of the alarms you raised, how many were real? It is about wasted attention.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Recall</strong>: of the attacks that happened, how many did you catch? It is about missed intrusions.</span></li><li><span class="step-n">3</span><span class="step-t">They move in opposite directions. Raising one lowers the other, always, and the choice is yours to make.</span></li></ol>
+<div class="callout c-analogy"><span class="c-label">Analogy</span><span class="c-body">A smoke alarm with perfect recall goes off when you make toast. A smoke alarm with perfect precision is one you disabled, and it is silent during the fire.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">6</div></section>
+<section class="slide s-diagram" data-index="7"><h1 class="s-title">Who Pays, and When</h1><div class="s-body"><figure class="diagram" data-spec="8fc86138951c"><svg aria-labelledby="dt-8fc86138951c" aria-describedby="dc-8fc86138951c" viewBox="0 0 711 290" width="711" height="290" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace"><title id="dt-8fc86138951c">Who pays for each kind of mistake in a security operations centre</title><defs><marker id="ah" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#c9ccd1"/></marker><marker id="ahs" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#cb333b"/></marker></defs><text x="22" y="24" fill="#e8565f" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700">Who pays for each kind of mistake in a security operations centre</text><marker id="ae56b4e9" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#56b4e9"/></marker><marker id="aee69f00" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#e69f00"/></marker><marker id="ae009e73" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#009e73"/></marker><marker id="aecc79a7" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#cc79a7"/></marker><line x1="195.0" y1="110.0" x2="265.4" y2="110.0" stroke="#56b4e9" stroke-width="2.2" marker-end="url(#ae56b4e9)"/><line x1="434.4" y1="110.0" x2="511.4" y2="110.0" stroke="#e69f00" stroke-width="2.2" marker-end="url(#aee69f00)"/><line x1="516.4" y1="129.6" x2="200.0" y2="205.2" stroke="#009e73" stroke-width="2.2" marker-end="url(#ae009e73)"/><line x1="195.0" y1="226.0" x2="265.4" y2="226.0" stroke="#cc79a7" stroke-width="2.2" marker-end="url(#aecc79a7)"/><polygon points="50.0,80.0 192.0,80.0 176.0,140.0 34.0,140.0" fill="#2c2f34" stroke="#f4f4f4" stroke-width="2"/><text x="113.0" y="115.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="600" text-anchor="middle">False alarm</text><rect x="273.4" y="80.0" width="158" height="60" rx="9" fill="#2c2f34" stroke="#f4f4f4" stroke-width="2"/><text x="352.4" y="115.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="600" text-anchor="middle">Analyst hours</text><rect x="519.4" y="80.0" width="158" height="60" rx="9" fill="#2c2f34" stroke="#f4f4f4" stroke-width="2"/><text x="598.4" y="115.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="600" text-anchor="middle">Alert fatigue</text><polygon points="50.0,196.0 192.0,196.0 176.0,256.0 34.0,256.0" fill="#2c2f34" stroke="#f4f4f4" stroke-width="2"/><text x="113.0" y="231.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="600" text-anchor="middle">Missed attack</text><rect x="273.4" y="196.0" width="158" height="60" rx="30.0" fill="#2c2f34" stroke="#cb333b" stroke-width="2.2"/><text x="352.4" y="223.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="600" text-anchor="middle">A breach nobody</text><text x="352.4" y="239.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="600" text-anchor="middle">saw</text><rect x="201" y="100" width="69" height="19" rx="4" fill="#0d0e10" stroke="#5a3034" stroke-width="0.8"/><text x="235.8" y="113.5" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">every one</text><rect x="441" y="100" width="76" height="19" rx="4" fill="#0d0e10" stroke="#5a3034" stroke-width="0.8"/><text x="479.1" y="113.5" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">eventually</text><rect x="305" y="148" width="63" height="19" rx="4" fill="#0d0e10" stroke="#5a3034" stroke-width="0.8"/><text x="336.6" y="161.4" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">leads to</text><rect x="218" y="216" width="36" height="19" rx="4" fill="#0d0e10" stroke="#5a3034" stroke-width="0.8"/><text x="235.8" y="229.5" fill="#a8acb3" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="10.5" font-weight="400" text-anchor="middle">once</text></svg><figcaption id="dc-8fc86138951c">False alarms cost hours and then attention, and losing attention is how the missed attack happens.</figcaption></figure></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">7</div></section>
+<section class="slide s-section" data-index="8"><h1 class="s-title vis-hidden">The Number That Hides Everything</h1><div class="s-body"><ul>
+<li>The tree scores 0.805 overall. Ask it about each attack family separately.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">8</div></section>
+<section class="slide s-content" data-index="9"><h1 class="s-title">Same Model, Four Very Different Answers</h1><div class="s-body"><table class="s-table"><thead><tr><th>Family</th><th>Attacks in test</th><th>Caught</th><th>Recall</th></tr></thead><tbody><tr><td>DoS</td><td>7,460</td><td>6,173</td><td>82.7 percent</td></tr><tr><td>Probe</td><td>2,421</td><td>1,987</td><td>82.1 percent</td></tr><tr><td>R2L</td><td>2,885</td><td>630</td><td>21.8 percent</td></tr><tr><td>U2R</td><td>67</td><td>20</td><td>29.9 percent</td></tr></tbody></table>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">The model finds four out of five denial-of-service attacks and one out of five remote-to-local ones. R2L is someone getting into an account they do not own, and U2R is someone becoming root. The two the model misses are the two that end up in an incident report.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">9</div></section>
+<section class="slide s-content" data-index="10"><div class="s-ai"><button type="button" class="ai-btn" data-i="10">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="10">Copy all steps so far</button></div><h1 class="s-title">Why It Misses Exactly Those</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">DoS and Probe are loud: many connections, odd flags, obvious byte counts.</span></li><li><span class="step-n">2</span><span class="step-t">R2L and U2R look like normal use, because they are normal use by the wrong person.</span></li><li><span class="step-n">3</span><span class="step-t">The training file has 995 R2L rows and 52 U2R rows to learn from, and the test file has 2,885 and 67.</span></li></ol>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">This is the imbalance from last session arriving as a consequence. A model does not fail evenly. It fails where the examples were thin and the signal was subtle, which is where the serious attacks live.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
+<section class="slide s-section" data-index="11"><h1 class="s-title vis-hidden">The Threshold Is a Decision, Not a Default</h1><div class="s-body"><ul>
+<li>A model does not output attack or normal. It outputs a score, and someone chose 0.5.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">11</div></section>
+<section class="slide s-content" data-index="12"><h1 class="s-title">The Same Model at Five Thresholds</h1><div class="s-body"><table class="s-table"><thead><tr><th>Threshold</th><th>Caught</th><th>Missed</th><th>False alarms</th><th>Precision</th><th>Recall</th></tr></thead><tbody><tr><td>0.1</td><td>8,879</td><td>3,954</td><td>993</td><td>0.899</td><td>0.692</td></tr><tr><td>0.3</td><td>8,172</td><td>4,661</td><td>807</td><td>0.910</td><td>0.637</td></tr><tr><td>0.5</td><td>7,987</td><td>4,846</td><td>746</td><td>0.915</td><td>0.622</td></tr><tr><td>0.7</td><td>7,809</td><td>5,024</td><td>706</td><td>0.917</td><td>0.609</td></tr><tr><td>0.9</td><td>7,120</td><td>5,713</td><td>650</td><td>0.916</td><td>0.555</td></tr></tbody></table>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">Moving from 0.9 to 0.1 catches 1,759 more attacks and costs 343 more false alarms. Whether that is a good trade is a question about your analysts, not about your model.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">12</div></section>
+<section class="slide s-content" data-index="13"><div class="s-ai"><button type="button" class="ai-btn" data-i="13">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="13">Copy all steps so far</button></div><h1 class="s-title">How To Choose One, Out Loud</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Estimate what one false alarm costs in minutes of analyst time.</span></li><li><span class="step-n">2</span><span class="step-t">Estimate what one missed attack costs, honestly, including that you may never know.</span></li><li><span class="step-n">3</span><span class="step-t">Pick the threshold that matches those two numbers, write the estimate down, and revisit it when either changes.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">Every threshold in production was chosen by somebody. When you inherit one, the useful question is what it was chosen for, and whether that is still true.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">13</div></section>
+<section class="slide s-content" data-index="14"><div class="s-ai"><button type="button" class="ai-btn" data-i="14">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="14">Copy all steps so far</button></div><h1 class="s-title">Every Threshold at Once</h1><div class="s-body"><ul>
+<li>The ROC curve is the whole sweep drawn as one line, and the area under it is one number for the model as a ranker.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t">The logistic regression scores 0.770 by area under the curve on this test set.</span></li><li><span class="step-n">2</span><span class="step-t">That number ignores the threshold entirely, which is its use and its limit.</span></li><li><span class="step-n">3</span><span class="step-t">A model can rank well and still be useless at every threshold you can afford.</span></li></ol>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>AUC.</strong> The chance that the model gives a random attack a higher score than a random normal connection. 0.5 is a coin, 1.0 is perfect ranking.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">14</div></section>
+<section class="slide s-content" data-index="15"><div class="s-ai"><button type="button" class="ai-btn" data-i="15">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="15">Copy all steps so far</button></div><h1 class="s-title">What To Report, and In What Order</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">The four counts, so a reader can compute anything else.</span></li><li><span class="step-n">2</span><span class="step-t">Recall per family, because the average hides the rare classes.</span></li><li><span class="step-n">3</span><span class="step-t">The threshold, and why that one.</span></li><li><span class="step-n">4</span><span class="step-t">Accuracy last, if at all, with the floor beside it.</span></li></ol>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">A report that leads with accuracy on this dataset is either uninformed or hoping you are. You now know enough to notice, which means you also have to write your own reports differently.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">15</div></section>
+<section class="slide s-content" data-index="16"><h1 class="s-title">The Book on Evaluation</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Chapter 3's evaluation section covers the classification metrics. Skip the regression ones for now.</span></li><li><span class="step-n">2</span><span class="step-t">Section 4.4 and the <code>confusion_matrix.py</code> example draw the same four boxes with a library.</span></li><li><span class="step-n">3</span><span class="step-t">The book's examples are balanced datasets, so the metrics agree with each other there. Yours do not, and that difference is this session.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">16</div></section>
+<section class="slide s-content" data-index="17"><h1 class="s-title">The Loop, on the Numbers You Report</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Analysis</strong>: the counts, the per-family recall, the threshold.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Issue</strong>: the metric that flattered you, or the class that vanished inside an average.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Tools</strong>: the confusion matrix, the sweep, the curve.</span></li><li><span class="step-n">4</span><span class="step-t"><strong>Solution</strong>: the number you will report from now on, and the one you will refuse to report alone.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">17</div></section>
+<section class="slide s-activity" data-index="18"><h1 class="s-title">In-Class Activity</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Compute the four counts for any model you fitted, and check accuracy by hand against the library.</span></li><li><span class="step-n">2</span><span class="step-t">Report recall for each family and name the two the model fails.</span></li><li><span class="step-n">3</span><span class="step-t">Sweep the threshold and report how many more attacks you catch at 0.1 than at 0.9, and what it costs.</span></li><li><span class="step-n">4</span><span class="step-t">Write one sentence a security manager could act on, using two numbers.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">18</div></section>
+<section class="slide s-exit" data-index="19"><h1 class="s-title">Exit Ticket</h1><div class="s-body"><ul>
+<li>A model has 0.99 precision and 0.20 recall. Describe it in one sentence a manager would understand.</li>
+<li>Your model scores 0.805 accuracy and catches 22 percent of R2L. Which number goes in the summary, and why?</li>
+<li>Who pays for a false alarm, and who pays for a missed attack?</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">19</div></section>
+</div></div>
+<div id="hud"></div>
+<div id="notes"><h3>Speaker Notes (press N to hide)</h3><div id="notes-body"></div></div>
+<div id="grid"></div>
+<script>window.__NOTES__="";
+window.__PROMPTS__={"5": {"title": "The Best Baseline, in Four Boxes", "text": "Load your saved matrices and fit the unlimited decision tree again. Print its confusion matrix\non the test set as four labelled counts: caught, missed, false alarms, correctly ignored. Then\ncompute accuracy from those four numbers by hand and check it against the library's accuracy.\nThen update ids-report.html for this step, as agreed."}, "10": {"title": "Why It Misses Exactly Those", "text": "For the tree you fitted, compute recall separately for each attack family in the test set, and\nthe false alarm rate on normal traffic. Print them as a table with the counts beside the\npercentages. Then say in one line which family you would report first to a security manager,\nand why it is not the one with the largest count.\nThen update ids-report.html for this step, as agreed."}, "13": {"title": "How To Choose One, Out Loud", "text": "Fit the logistic regression, get its probability scores on the test set, and sweep the\nthreshold from 0.1 to 0.9 in steps of 0.1. Print caught, missed, false alarms, precision and\nrecall at each step. Then pick the threshold you would use if one false alarm costs ten minutes\nof analyst time and one missed attack costs a working week, and show the arithmetic.\nThen update ids-report.html for this step, as agreed."}, "14": {"title": "Every Threshold at Once", "text": "Compute the area under the ROC curve for both models on the test set and print both numbers.\nThen draw both ROC curves on one figure, save it as SVG next to my report and embed it. Then\nfind the point on the logistic regression curve closest to catching 90 percent of attacks, and\nprint the threshold and the false alarm count there. Say in one line whether that threshold is\naffordable.\nThen update ids-report.html for this step, as agreed."}, "15": {"title": "What To Report, and In What Order", "text": "Write an evaluation section for my report covering the tree and the logistic regression. For\neach: the four counts, precision, recall, recall per attack family, the threshold used, and the\ndo-nothing floor beside the accuracy. Order it the way the slide says. Then add one paragraph\nnaming which model I would deploy and the single number I would put on a dashboard.\nThen update ids-report.html for this step, as agreed."}};
+window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems. We are working through session 11, \"Evaluation: The Metrics That Matter When the Rare Class Is the Point\". You are running the code, not describing it: do each step, show me the commands you ran and the real output they produced, and keep any explanation to a line or two. I am a beginner, so use plain words.";</script>
+<script>
+(function(){
+  var deck=document.getElementById('deck'), stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var prog=document.getElementById('prog'), hud=document.getElementById('hud');
+  var notes=document.getElementById('notes'), grid=document.getElementById('grid');
+  var i=0, N=slides.length;
+  function fit(){
+    var pad=0, sw=(window.innerWidth-pad)/1280, sh=(window.innerHeight-pad)/720;
+    var s=Math.min(sw,sh); deck.style.transform='scale('+s+')';
+  }
+  function show(n){
+    i=Math.max(0,Math.min(N-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i);});
+    prog.style.width=((i+1)/N*100)+'%';
+    // Notes are stripped from the published deck, where N is guarded to do nothing, so the
+    // hint drops the key rather than inviting a press that answers with silence.
+    hud.textContent=(i+1)+' / '+N+'   [←→] nav  '+(window.__NOTES__?'[N]otes  ':'')+'[G]rid  [P]rint';
+    location.hash=(i+1);
+  }
+  function next(){show(i+1);} function prev(){show(i-1);}
+  window.addEventListener('resize',fit);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){show(0);} else if(e.key==='End'){show(N-1);}
+    // Only when there are notes to show. The published deck has them stripped to an
+    // empty string, and N used to open a panel containing nothing but its own title,
+    // which reads to a student as something broken rather than something withheld.
+    else if(e.key==='n'||e.key==='N'){ if(window.__NOTES__) notes.classList.toggle('show'); }
+    else if(e.key==='g'||e.key==='G'){grid.classList.toggle('show');}
+    else if(e.key==='p'||e.key==='P'){window.print();}
+    else if(e.key==='Escape'){grid.classList.remove('show');}
+    else if(/^[0-9]$/.test(e.key)){/* number jump buffer */ jump(e.key);}
+  });
+  // click nav
+  // Clicking the stage advances. Controls inside a slide must opt out, or pressing
+  // one both fires the control and skips the slide it belongs to.
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('#grid')||e.target.closest('.ai-btn'))return; next(); });
+  // number jump
+  var buf=''; var bt;
+  function jump(d){buf+=d; clearTimeout(bt); bt=setTimeout(function(){var n=parseInt(buf,10); if(n)show(n-1); buf='';},600);}
+  // grid
+  slides.forEach(function(s,k){
+    var g=document.createElement('div'); g.className='g';
+    var h=s.querySelector('.s-title,.title-main'); var t=s.querySelector('.tag');
+    g.innerHTML='<div class="gt">'+(t?t.textContent:'')+'</div><div class="gh">'+
+      (h?h.textContent:('Slide '+(k+1)))+'</div><div class="gn">'+(k+1)+'</div>';
+    g.addEventListener('click',function(ev){ev.stopPropagation();grid.classList.remove('show');show(k);});
+    grid.appendChild(g);
+  });
+  // init from hash
+  var h=parseInt((location.hash||'').replace('#',''),10);
+  fit(); show(isNaN(h)?0:h-1);
+})();
+</script>
+<script>
+(function(){
+  var nb=document.getElementById('notes-body');
+  if(window.__NOTES__){ nb.textContent=window.__NOTES__; }
+
+  // Copy a step, or every step up to here, for pasting into Claude. No network call:
+  // students are on the free desktop app, so the deck's job is to hand over text.
+  var P = window.__PROMPTS__ || {}, CTX = window.__DECK_CONTEXT__ || '';
+  var NL = String.fromCharCode(10);   // HTML_SHELL is a non-raw Python string, so a
+                                      // backslash-n here is eaten at import time and
+                                      // leaves an unterminated JS string literal.
+  function build(upto, all){
+    var keys = Object.keys(P).map(Number).sort(function(a,b){return a-b;});
+    var take = all ? keys.filter(function(k){return k <= upto;}) : [upto];
+    // The single-step copy assumes a chat that already has context; only the
+    // cumulative copy, meant for a fresh or reset chat, carries the preamble.
+    var out = (all && CTX) ? [CTX, ''] : [];
+    take.forEach(function(k, i){
+      if(!P[k]) return;
+      out.push((all ? 'Step ' + (i+1) + ' - ' : '') + P[k].title);
+      out.push(P[k].text, '');
+    });
+    return out.join(NL).trim();
+  }
+  function flash(btn, msg){
+    var old = btn.textContent; btn.textContent = msg;
+    setTimeout(function(){ btn.textContent = old; }, 1400);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.ai-btn');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var txt = build(parseInt(b.dataset.i, 10), b.classList.contains('ai-all'));
+    // The modern API needs a secure context and a permission that a projector browser
+    // or a sandboxed frame may refuse, so a rejection falls through to the old method
+    // rather than telling the student to press a key that would copy nothing.
+    function legacy(){
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(err) { ok = false; }
+      document.body.removeChild(ta);
+      flash(b, ok ? 'Prompt copied' : 'Copy blocked');
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Prompt copied'); }, legacy);
+    } else { legacy(); }
+  });
+})();
+</script>
+</body></html>
