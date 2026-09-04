@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CIS 3370 Intrusion Detection Systems - Session 12: From Tabular to Time-Series: Ordering, Windows, and Splitting by Time</title>
+<style>
+:root{
+  --slate:#222222; --slate2:#2b2b2e; --panel:#2c2f34; --panel2:#333;
+  --ink:#f4f4f4; --muted:#b9bcc2; --line:#41444b;
+  --red:#cb333b; --red-dk:#89191c; --red-lt:#f08a91;
+  --grn:#7be39a; --amb:#e2a04a;
+  --mono:"JetBrains Mono","DejaVu Sans Mono",ui-monospace,Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(--sans)}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c0c0d}
+#deck{width:1280px;height:720px;position:relative;transform-origin:center center;background:var(--slate)}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:54px 64px 48px;background:var(--slate)}
+.slide.active{display:flex}
+.slide.s-title,.slide.s-section{align-items:flex-start;justify-content:center}
+/* accent rails */
+#deck::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--red);z-index:5}
+.s-title{background:var(--slate)}
+.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:19px}
+.s-table th{background:#26262a;color:#fff;text-align:left;font-weight:700;padding:8px 12px;border-bottom:2px solid var(--red)}
+.s-table td{padding:8px 12px;border-bottom:1px solid #34343a;color:#e8e8ea;vertical-align:top}
+.s-table tr:last-child td{border-bottom:none}
+.title-band{border-left:8px solid var(--red);padding:8px 0 8px 28px}
+.title-kicker{color:var(--red-lt);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:20px}
+.title-main{font-size:52px;line-height:1.08;margin:14px 0 18px;font-weight:800}
+.title-meta{font-size:22px;color:var(--ink);font-weight:600}
+.title-sub{font-size:17px;color:var(--muted);margin-top:8px}
+.s-title .s-num{display:none}
+/* section divider slides */
+.s-section .s-title{color:#fff}
+.s-section{background:var(--slate)}
+.s-section .s-body{font-size:35px;font-weight:800;line-height:1.28;letter-spacing:-.01em;background:var(--panel);border:1px solid var(--line);border-left:14px solid var(--red);border-radius:14px;padding:34px 40px 34px 38px;box-shadow:0 2px 10px rgba(0,0,0,.28);flex:0 0 auto;align-self:stretch;overflow:visible}
+.s-section .s-body ul{margin:0;padding-left:1.1em}
+.s-section .s-body li+li{margin-top:18px}
+/* Opt-in warning divider: {type=section kind=warn}. Amber matches the warn
+   callout, so it is used only where the content really is a rule or hazard. */
+.s-section.s-kind-warn .s-body{border-left-color:var(--amb)}
+.s-section.s-kind-warn .s-body ul{list-style:none;padding-left:0}
+.s-section.s-kind-warn .s-body li{position:relative;padding-left:1.7em}
+.s-section.s-kind-warn .s-body li::before{content:"\26A0";position:absolute;left:0;top:.02em;color:var(--amb);font-size:.9em;line-height:1.28}
+/* headers */
+.s-title.s-title{}
+h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
+.vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.lead{color:var(--muted);font-size:21px;margin:0 0 6px}
+ul,ol{margin:4px 0;padding-left:30px}
+li{margin:8px 0}
+li.sub{list-style:circle;color:var(--muted);font-size:20px}
+strong{color:#fff}
+em{color:var(--red-lt);font-style:normal;font-weight:600}
+/* A link on a dark slide left at the browser default is #0000EE, which is 1.85:1
+   against this background and fails AA outright. The house pink is 7.25:1, and the
+   underline stays so the link is not signalled by colour alone. */
+a{color:var(--red-lt);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+a:visited{color:var(--red-lt)}
+a:hover,a:focus-visible{color:#fff;text-decoration-thickness:2px}
+code{font-family:var(--mono);background:#15161a;color:#ffd9b0;padding:2px 7px;border-radius:5px;font-size:.9em}
+p{margin:6px 0}
+/* objectives */
+ol.objectives li,ol.steps li{margin:12px 0}
+/* step cards */
+ol.steps{list-style:none;padding:0;counter-reset:none}
+ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:12px 16px}
+.step-n{flex:none;width:34px;height:34px;border-radius:8px;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+.step-t{padding-top:4px}
+/* callouts */
+.callout{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--red);font-size:24px}
+.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:16px;padding-top:3px}
+.c-def{border-left-color:var(--red)} .c-def .c-label{color:var(--red-lt)}
+.c-note{border-left-color:#5a8fd6} .c-note .c-label{color:#8fb8ea}
+.c-warn{border-left-color:var(--amb)} .c-warn .c-label{color:var(--amb)}
+.c-tip{border-left-color:var(--grn)} .c-tip .c-label{color:var(--grn)}
+.c-analogy{border-left-color:#b48ad9} .c-analogy .c-label{color:#c6a6e6}
+.c-why{border-left-color:var(--red-lt)} .c-why .c-label{color:var(--red-lt)}
+/* terminal */
+.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:18px;margin:4px 0}
+.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:14px;border-bottom:1px solid #2a2c33}
+.term-body{padding:12px 16px;line-height:1.5}
+.t-line{white-space:pre-wrap;word-break:break-word}
+.t-in{color:#eaeaea}
+.t-prompt{color:var(--red-lt);font-weight:700;user-select:none}
+.t-cmd{color:#7fd1ff;font-weight:700}
+.t-args{color:#ffd9b0}
+.t-ann{color:#6f7681;font-style:italic;margin-left:10px}
+.t-out{color:#9fa6b0}
+/* code block */
+pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:17px;color:#d8dee9;overflow:auto;margin:4px 0}
+/* diagrams */
+.diagram-wrap{display:flex;justify-content:center;align-items:center;flex:1;min-height:0}
+/* The figure is a column that may not outgrow the space the slide gives it, and the
+   caption is the part that must never be the bit that gets pushed out: the drawing
+   can shrink, the sentence explaining it cannot. Without this the svg claimed its
+   full max-height and the caption spilled under whatever came next on the slide,
+   silently, looking correct in the source. */
+.diagram-wrap svg{max-width:100%;max-height:400px;height:auto;min-height:0;flex:0 1 auto}
+/* width:100% because a flex item is otherwise sized by its widest child, which here is
+   the caption: without it a figure came out as wide as its sentence happened to be, and
+   a short caption shrank the drawing until its labels could not be read from the room.
+   align-items keeps an engine figure, which carries its own width, centred inside it. */
+.diagram-wrap figure{margin:0;text-align:center;display:flex;flex-direction:column;
+  align-items:center;min-height:0;max-height:100%;width:100%}
+.diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
+.diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
+/* footer + slide number */
+.s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
+
+.ai-btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-family:var(--sans);font-size:15px;font-weight:600;cursor:pointer}
+.ai-btn:hover{border-color:var(--red-lt);color:var(--red-lt)}
+.ai-btn:focus-visible{outline:3px solid var(--red-lt);outline-offset:2px}
+@media print{.s-ai{display:none}}
+.s-foot{position:absolute;left:64px;right:64px;bottom:16px;display:flex;justify-content:space-between;color:#6f7681;font-size:13px;border-top:1px solid var(--line);padding-top:8px}
+.s-num{position:absolute;right:22px;bottom:14px;color:#6f7681;font-size:13px;font-weight:700}
+.tag{position:absolute;right:64px;top:20px;color:var(--muted);font-size:13px}
+/* progress bar */
+#prog{position:fixed;top:0;left:0;height:5px;background:var(--red);z-index:50;transition:width .2s}
+/* HUD */
+#hud{position:fixed;bottom:10px;left:12px;color:#666;font-size:12px;font-family:var(--mono);z-index:40;user-select:none}
+/* speaker notes */
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:38vh;overflow:auto;background:#0b0b0cee;border-top:3px solid var(--red);
+  color:#e6e6e6;padding:16px 22px;font-size:16px;line-height:1.5;display:none;z-index:45;white-space:pre-wrap}
+#notes.show{display:block}
+#notes h3{margin:0 0 8px;color:var(--red-lt);font-size:14px;text-transform:uppercase;letter-spacing:.05em}
+/* grid overview */
+#grid{position:fixed;inset:0;background:#0c0c0dfa;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:12px;padding:24px;overflow:auto}
+#grid.show{display:grid}
+#grid .g{border:1px solid var(--line);border-radius:8px;background:var(--slate);padding:10px;cursor:pointer;height:150px;overflow:hidden;position:relative}
+#grid .g:hover{border-color:var(--red)}
+#grid .g .gt{font-size:12px;color:var(--muted)}
+#grid .g .gh{font-size:15px;font-weight:700;margin-top:6px}
+#grid .g .gn{position:absolute;right:8px;bottom:6px;color:#666;font-size:11px}
+/* print: one slide per page */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{background:#fff;height:auto}
+  #stage{position:static;display:block;overflow:visible}
+  #deck{transform:none!important;width:1280px;height:auto}
+  #prog,#hud,#notes,#grid{display:none!important}
+  .slide{position:relative;display:flex!important;inset:auto;width:1280px;height:720px;page-break-after:always;break-after:page}
+  #deck::before{position:absolute}
+}
+</style></head>
+<body>
+<div id="prog"></div>
+<div id="stage"><div id="deck">
+<section class="slide s-title" data-index="1"><div class="title-band"><div class="title-kicker">CIS 3370 Intrusion Detection Systems</div><h1 class="title-main">From Tabular to Time-Series: Ordering, Windows, and Splitting by Time</h1><div class="title-meta">Session 12 &nbsp;·&nbsp; M3 - Detection, from Baselines to Models</div><div class="title-sub">Outcomes: CO2, CO3 &nbsp;·&nbsp; Dr. Gonzalo D Parra</div></div><div class="s-num">1</div></section>
+<section class="slide s-objectives" data-index="2"><h1 class="s-title">Learning Objectives</h1><div class="s-body"><p class="lead">By the end of this session you will be able to:</p><ol class="objectives"><li>- Name the three things a clock changes about a dataset and about how you may split it.</li><li>- Build a window feature and say what it measures that a single row cannot.</li><li>- Split by time rather than at random, and measure whether it changed anything.</li><li>- Report an experiment whose expected effect did not appear, without hiding it.</li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">2</div></section>
+<section class="slide s-section" data-index="3"><h1 class="s-title vis-hidden">NSL-KDD Has No Clock</h1><div class="s-body"><ul>
+<li>Every row you have modelled so far was a connection with no position in time.</li>
+<li>Real detection happens in order, and the order carries information.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">3</div></section>
+<section class="slide s-content" data-index="4"><h1 class="s-title">Three Things a Clock Changes</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>You may not shuffle.</strong> Shuffling mixes the future into the past, and the past is all a detector ever has.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>You must split by time.</strong> Train on earlier, test on later, because that is the only split production resembles.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>A window becomes a feature.</strong> How many times in the last minute is a question a single row cannot answer.</span></li></ol>
+<div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>Window feature.</strong> A number computed over the rows within some period before the current one, such as connections from this source in the last minute.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">4</div></section>
+<section class="slide s-content" data-index="5"><h1 class="s-title">The Second Dataset</h1><div class="s-body"><ul>
+<li>CIC-IDS2017, from the Canadian Institute for Cybersecurity, is five days of traffic with attacks on known days.</li>
+</ul>
+<table class="s-table"><thead><tr><th>Day</th><th>What is in it</th></tr></thead><tbody><tr><td>Monday</td><td>benign traffic only</td></tr><tr><td>Tuesday</td><td>brute force against FTP and SSH</td></tr><tr><td>Wednesday</td><td>denial of service, and Heartbleed</td></tr><tr><td>Thursday</td><td>web attacks and infiltration</td></tr><tr><td>Friday</td><td>botnet, port scan, and a distributed denial of service</td></tr></tbody></table>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">The attacks are on different days, which is what makes it a time-series dataset rather than a table with a timestamp column. Train on Tuesday and test on Thursday and you are asking the question production asks.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">5</div></section>
+<section class="slide s-content" data-index="6"><div class="s-ai"><button type="button" class="ai-btn" data-i="6">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="6">Copy all steps so far</button></div><h1 class="s-title">What You Download</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Full packet captures, one per day, if you want to run your own sensors over them.</span></li><li><span class="step-n">2</span><span class="step-t">Labelled flows as CSV, with more than eighty features per flow, produced by CICFlowMeter.</span></li><li><span class="step-n">3</span><span class="step-t">A label per flow saying benign or which attack, and separate documentation of the attack timings.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">Take the machine-learning CSVs first. The captures are large and you already know from Stage 2 what a sensor would produce from them.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">6</div></section>
+<section class="slide s-content" data-index="7"><div class="s-ai"><button type="button" class="ai-btn" data-i="7">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="7">Copy all steps so far</button></div><h1 class="s-title">The First Four Questions, Plus One</h1><div class="s-body"><ul>
+<li>How many rows, what columns, what types, what values, and now: what does the clock say.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">7</div></section>
+<section class="slide s-content" data-index="8"><h1 class="s-title">Ordering Is a Property You Check, Not Assume</h1><div class="s-body"><ul>
+<li>On the course bundle, the five minutes of Zeek connections are not evenly spread:</li>
+</ul>
+<table class="s-table"><thead><tr><th>Minute</th><th>Connections</th></tr></thead><tbody><tr><td>first</td><td>1,207</td></tr><tr><td>second</td><td>1,285</td></tr><tr><td>third</td><td>1,767</td></tr><tr><td>fourth</td><td>1,207</td></tr><tr><td>fifth</td><td>969</td></tr></tbody></table>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">The busiest minute has 82 percent more connections than the quietest. Any model that assumes a steady rate is already wrong, and any window feature has to be a rate rather than a count if minutes differ in length.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">8</div></section>
+<section class="slide s-content" data-index="9"><div class="s-ai"><button type="button" class="ai-btn" data-i="9">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="9">Copy all steps so far</button></div><h1 class="s-title">Build One Window Feature</h1><div class="s-body"></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">9</div></section>
+<section class="slide s-section" data-index="10"><h1 class="s-title vis-hidden">Three Ways Time Leaks Into a Model</h1><div class="s-body"><ul>
+<li>Each one produces a score that is better than the truth.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
+<section class="slide s-content" data-index="11"><h1 class="s-title">The Three, Named</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Shuffled split.</strong> The same period appears in training and in test, so the model has seen the future.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Feature computed over everything.</strong> A mean, a scaler, a vocabulary fitted across the whole file, which is the leak from Stage 4 wearing a clock.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>A label that arrives late.</strong> A column that is only known after the event you are predicting, which is the <code>difficulty</code> column from Lecture 4 in a new outfit.</span></li></ol>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">All three produce the same symptom: a validation score you cannot reproduce in production. That is why the fix is procedural rather than clever.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">11</div></section>
+<section class="slide s-content" data-index="12"><h1 class="s-title">So We Ran the Experiment</h1><div class="s-body"><ul>
+<li>Same data, same model, two splits. The course bundle: 6,435 connections, 2,773 of which Suricata alerted on.</li>
+</ul>
+<table class="s-table"><thead><tr><th>Split</th><th>Accuracy</th><th>Precision</th><th>Recall</th></tr></thead><tbody><tr><td>random 70 and 30</td><td>0.924</td><td>0.875</td><td>0.969</td></tr><tr><td>split by time</td><td>0.939</td><td>0.951</td><td>0.942</td></tr></tbody></table>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">The expected result was that the random split would flatter the model. It did not. The time split scored slightly higher.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">12</div></section>
+<section class="slide s-content" data-index="13"><h1 class="s-title">When the Expected Effect Does Not Appear</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Say so. An experiment that came out the other way is a result, not a mistake to bury.</span></li><li><span class="step-n">2</span><span class="step-t">Then explain it: the bundle is five minutes of ordinary browsing, so the later minutes look like the earlier ones.</span></li><li><span class="step-n">3</span><span class="step-t">Leakage needs something to leak. With no drift between periods and few repeated flows, shuffling costs nothing here.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">This is the whole method of the course in one slide. Run it, report what happened, explain it, and say what would have to be different for the other answer.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">13</div></section>
+<section class="slide s-content" data-index="14"><div class="s-ai"><button type="button" class="ai-btn" data-i="14">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="14">Copy all steps so far</button></div><h1 class="s-title">Where It Does Appear</h1><div class="s-body"><ul>
+<li>CIC-IDS2017 has five days and different attacks on each of them. That is drift you can measure.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t">Train on Tuesday's brute force and test on Thursday's web attacks: the model meets an attack it has never seen.</span></li><li><span class="step-n">2</span><span class="step-t">Shuffle those days together and the same model looks far better, because Thursday is in its training data.</span></li><li><span class="step-n">3</span><span class="step-t">The gap between those two numbers is the leak, and now it is large enough to see.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">14</div></section>
+<section class="slide s-content" data-index="15"><h1 class="s-title">Splitting by Time, Correctly</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Sort by the timestamp before anything else.</span></li><li><span class="step-n">2</span><span class="step-t">Choose the cut as a moment, not as a row count, so a busy minute does not straddle it.</span></li><li><span class="step-n">3</span><span class="step-t">Fit every scaler, encoder and vocabulary on the training side of that moment only.</span></li><li><span class="step-n">4</span><span class="step-t">Write the cut down in your report, because it is part of the result.</span></li></ol>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">Cross-validation with random folds is the shuffled split wearing a lab coat. On time-ordered data, use folds that move forward in time, each training on everything before the fold.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">15</div></section>
+<section class="slide s-content" data-index="16"><h1 class="s-title">What a Window Cannot See</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Anything slower than the window. A scan spread over an hour is invisible to a one-minute count.</span></li><li><span class="step-n">2</span><span class="step-t">Anything that happened before your data starts, which is the boundary problem from Stage 2.</span></li><li><span class="step-n">3</span><span class="step-t">Anything a sensor did not record, which is Stage 1 arriving again.</span></li></ol>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">Every window is a statement about the timescale of the attacks you expect. Write that statement down, because your successor will otherwise assume you measured it.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">16</div></section>
+<section class="slide s-content" data-index="17"><div class="s-ai"><button type="button" class="ai-btn" data-i="17">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="17">Copy all steps so far</button></div><h1 class="s-title">The Loop, on Time</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Analysis</strong>: the rates per minute, the window feature, the two split scores.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Issue</strong>: the leak you found, or the one you looked for and did not find.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Tools</strong>: the sort, the window, the split by moment.</span></li><li><span class="step-n">4</span><span class="step-t"><strong>Solution</strong>: the split you will use for the rest of the course, and the timescale your windows assume.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">17</div></section>
+<section class="slide s-activity" data-index="18"><h1 class="s-title">In-Class Activity</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Report the connections per minute for the bundle and the ratio between the busiest and quietest.</span></li><li><span class="step-n">2</span><span class="step-t">Build the one-minute window feature and report its maximum.</span></li><li><span class="step-n">3</span><span class="step-t">Split one CIC-IDS2017 day by time and report the row counts on each side of your cut.</span></li><li><span class="step-n">4</span><span class="step-t">Run the two splits and report both scores, including whether the expected gap appeared.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">18</div></section>
+<section class="slide s-exit" data-index="19"><h1 class="s-title">Exit Ticket</h1><div class="s-body"><ul>
+<li>Give one reason not to shuffle a dataset that has a clock.</li>
+<li>Your random split scored higher than your time split. Name two possible explanations.</li>
+<li>A window feature counts events in the last minute. Describe an attacker it cannot see.</li>
+</ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">19</div></section>
+</div></div>
+<div id="hud"></div>
+<div id="notes"><h3>Speaker Notes (press N to hide)</h3><div id="notes-body"></div></div>
+<div id="grid"></div>
+<script>window.__NOTES__="";
+window.__PROMPTS__={"6": {"title": "What You Download", "text": "Find where I put the CIC-IDS2017 machine learning CSV files and print the full path. List every\nfile with its size in megabytes and its row count. Then print the column names of one file and\nhow many there are. Do not load all of the files into memory at once, and tell me the total row\ncount across all of them.\nThen update ids-report.html for this step, as agreed."}, "7": {"title": "The First Four Questions, Plus One", "text": "Load one day of CIC-IDS2017 and answer the first four questions about it. Then answer the\nfifth: what is the earliest timestamp, the latest, and are the rows in order in the file as\ndelivered. Print the number of rows per label. Then print how many rows have a timestamp that\nis out of order relative to the previous row.\nThen update ids-report.html for this step, as agreed."}, "9": {"title": "Build One Window Feature", "text": "Load the Zeek connections from the course bundle and sort them by time. For each connection,\ncompute how many connections the same source address made in the sixty seconds before it, and\nadd that as a column. Print the distribution of that column and the ten rows with the highest\nvalue. Say in one line what a high value means and what else could explain it.\nThen update ids-report.html for this step, as agreed."}, "14": {"title": "Where It Does Appear", "text": "Using two days of CIC-IDS2017, build the same small model twice: once with a random split\nacross both days, and once trained on the earlier day and tested on the later one. Print\naccuracy, precision and recall for both. Print the difference. Then say in one line which\nnumber you would put in a paper and why.\nThen update ids-report.html for this step, as agreed."}, "17": {"title": "The Loop, on Time", "text": "Read ids-report.html and add a section called \"How I split my data\" that states the exact\nmoment I cut, how many rows fell on each side, and which transformations were fitted on the\ntraining side only. Then write the four sentences Analysis, Issue, Tools, Solution about the\nrandom against time-split experiment, including the result that did not appear.\nThen update ids-report.html for this step, as agreed."}};
+window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems. We are working through session 12, \"From Tabular to Time-Series: Ordering, Windows, and Splitting by Time\". You are running the code, not describing it: do each step, show me the commands you ran and the real output they produced, and keep any explanation to a line or two. I am a beginner, so use plain words.";</script>
+<script>
+(function(){
+  var deck=document.getElementById('deck'), stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var prog=document.getElementById('prog'), hud=document.getElementById('hud');
+  var notes=document.getElementById('notes'), grid=document.getElementById('grid');
+  var i=0, N=slides.length;
+  function fit(){
+    var pad=0, sw=(window.innerWidth-pad)/1280, sh=(window.innerHeight-pad)/720;
+    var s=Math.min(sw,sh); deck.style.transform='scale('+s+')';
+  }
+  function show(n){
+    i=Math.max(0,Math.min(N-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i);});
+    prog.style.width=((i+1)/N*100)+'%';
+    // Notes are stripped from the published deck, where N is guarded to do nothing, so the
+    // hint drops the key rather than inviting a press that answers with silence.
+    hud.textContent=(i+1)+' / '+N+'   [←→] nav  '+(window.__NOTES__?'[N]otes  ':'')+'[G]rid  [P]rint';
+    location.hash=(i+1);
+  }
+  function next(){show(i+1);} function prev(){show(i-1);}
+  window.addEventListener('resize',fit);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+    else if(e.key==='Home'){show(0);} else if(e.key==='End'){show(N-1);}
+    // Only when there are notes to show. The published deck has them stripped to an
+    // empty string, and N used to open a panel containing nothing but its own title,
+    // which reads to a student as something broken rather than something withheld.
+    else if(e.key==='n'||e.key==='N'){ if(window.__NOTES__) notes.classList.toggle('show'); }
+    else if(e.key==='g'||e.key==='G'){grid.classList.toggle('show');}
+    else if(e.key==='p'||e.key==='P'){window.print();}
+    else if(e.key==='Escape'){grid.classList.remove('show');}
+    else if(/^[0-9]$/.test(e.key)){/* number jump buffer */ jump(e.key);}
+  });
+  // click nav
+  // Clicking the stage advances. Controls inside a slide must opt out, or pressing
+  // one both fires the control and skips the slide it belongs to.
+  stage.addEventListener('click',function(e){
+    if(e.target.closest('#grid')||e.target.closest('.ai-btn'))return; next(); });
+  // number jump
+  var buf=''; var bt;
+  function jump(d){buf+=d; clearTimeout(bt); bt=setTimeout(function(){var n=parseInt(buf,10); if(n)show(n-1); buf='';},600);}
+  // grid
+  slides.forEach(function(s,k){
+    var g=document.createElement('div'); g.className='g';
+    var h=s.querySelector('.s-title,.title-main'); var t=s.querySelector('.tag');
+    g.innerHTML='<div class="gt">'+(t?t.textContent:'')+'</div><div class="gh">'+
+      (h?h.textContent:('Slide '+(k+1)))+'</div><div class="gn">'+(k+1)+'</div>';
+    g.addEventListener('click',function(ev){ev.stopPropagation();grid.classList.remove('show');show(k);});
+    grid.appendChild(g);
+  });
+  // init from hash
+  var h=parseInt((location.hash||'').replace('#',''),10);
+  fit(); show(isNaN(h)?0:h-1);
+})();
+</script>
+<script>
+(function(){
+  var nb=document.getElementById('notes-body');
+  if(window.__NOTES__){ nb.textContent=window.__NOTES__; }
+
+  // Copy a step, or every step up to here, for pasting into Claude. No network call:
+  // students are on the free desktop app, so the deck's job is to hand over text.
+  var P = window.__PROMPTS__ || {}, CTX = window.__DECK_CONTEXT__ || '';
+  var NL = String.fromCharCode(10);   // HTML_SHELL is a non-raw Python string, so a
+                                      // backslash-n here is eaten at import time and
+                                      // leaves an unterminated JS string literal.
+  function build(upto, all){
+    var keys = Object.keys(P).map(Number).sort(function(a,b){return a-b;});
+    var take = all ? keys.filter(function(k){return k <= upto;}) : [upto];
+    // The single-step copy assumes a chat that already has context; only the
+    // cumulative copy, meant for a fresh or reset chat, carries the preamble.
+    var out = (all && CTX) ? [CTX, ''] : [];
+    take.forEach(function(k, i){
+      if(!P[k]) return;
+      out.push((all ? 'Step ' + (i+1) + ' - ' : '') + P[k].title);
+      out.push(P[k].text, '');
+    });
+    return out.join(NL).trim();
+  }
+  function flash(btn, msg){
+    var old = btn.textContent; btn.textContent = msg;
+    setTimeout(function(){ btn.textContent = old; }, 1400);
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.ai-btn');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    var txt = build(parseInt(b.dataset.i, 10), b.classList.contains('ai-all'));
+    // The modern API needs a secure context and a permission that a projector browser
+    // or a sandboxed frame may refuse, so a rejection falls through to the old method
+    // rather than telling the student to press a key that would copy nothing.
+    function legacy(){
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, txt.length);
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(err) { ok = false; }
+      document.body.removeChild(ta);
+      flash(b, ok ? 'Prompt copied' : 'Copy blocked');
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ flash(b, 'Prompt copied'); }, legacy);
+    } else { legacy(); }
+  });
+})();
+</script>
+</body></html>
