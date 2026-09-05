@@ -14,14 +14,19 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(--sans)}
 #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c0c0d}
-#deck{width:1280px;height:720px;position:relative;transform-origin:center center;background:var(--slate)}
+/* flex:none is load-bearing. #stage is a flex container, so without it the deck
+   inherits flex-shrink:1 and squeezes to the window width whenever that is under
+   1280, while height stays 720: the canvas turns 4:3, and every slide re-wraps in a
+   narrower box and clips. It only shows up in a small or zoomed window, which is
+   exactly the projector. */
+#deck{width:1280px;height:720px;flex:none;position:relative;transform-origin:center center;background:var(--slate)}
 .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:54px 64px 48px;background:var(--slate)}
 .slide.active{display:flex}
 .slide.s-title,.slide.s-section{align-items:flex-start;justify-content:center}
 /* accent rails */
 #deck::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--red);z-index:5}
 .s-title{background:var(--slate)}
-.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:19px}
+.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:22px}
 .s-table th{background:#26262a;color:#fff;text-align:left;font-weight:700;padding:8px 12px;border-bottom:2px solid var(--red)}
 .s-table td{padding:8px 12px;border-bottom:1px solid #34343a;color:#e8e8ea;vertical-align:top}
 .s-table tr:last-child td{border-bottom:none}
@@ -49,10 +54,10 @@ h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bott
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
 .s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
-.lead{color:var(--muted);font-size:21px;margin:0 0 6px}
+.lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
-li.sub{list-style:circle;color:var(--muted);font-size:20px}
+li.sub{list-style:circle;color:var(--muted);font-size:21px}
 strong{color:#fff}
 em{color:var(--red-lt);font-style:normal;font-weight:600}
 /* A link on a dark slide left at the browser default is #0000EE, which is 1.85:1
@@ -72,7 +77,7 @@ ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel)
 .step-t{padding-top:4px}
 /* callouts */
 .callout{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--red);font-size:24px}
-.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:16px;padding-top:3px}
+.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:17px;padding-top:3px}
 .c-def{border-left-color:var(--red)} .c-def .c-label{color:var(--red-lt)}
 .c-note{border-left-color:#5a8fd6} .c-note .c-label{color:#8fb8ea}
 .c-warn{border-left-color:var(--amb)} .c-warn .c-label{color:var(--amb)}
@@ -80,8 +85,8 @@ ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel)
 .c-analogy{border-left-color:#b48ad9} .c-analogy .c-label{color:#c6a6e6}
 .c-why{border-left-color:var(--red-lt)} .c-why .c-label{color:var(--red-lt)}
 /* terminal */
-.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:18px;margin:4px 0}
-.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:14px;border-bottom:1px solid #2a2c33}
+.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:20px;margin:4px 0}
+.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:16px;border-bottom:1px solid #2a2c33}
 .term-body{padding:12px 16px;line-height:1.5}
 .t-line{white-space:pre-wrap;word-break:break-word}
 .t-in{color:#eaeaea}
@@ -91,7 +96,7 @@ ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel)
 .t-ann{color:#6f7681;font-style:italic;margin-left:10px}
 .t-out{color:#9fa6b0}
 /* code block */
-pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:17px;color:#d8dee9;overflow:auto;margin:4px 0}
+pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:19px;color:#d8dee9;overflow:auto;margin:4px 0}
 /* diagrams */
 .diagram-wrap{display:flex;justify-content:center;align-items:center;flex:1;min-height:0}
 /* The figure is a column that may not outgrow the space the slide gives it, and the
@@ -106,7 +111,7 @@ pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:
    align-items keeps an engine figure, which carries its own width, centred inside it. */
 .diagram-wrap figure{margin:0;text-align:center;display:flex;flex-direction:column;
   align-items:center;min-height:0;max-height:100%;width:100%}
-.diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
+.diagram-wrap figcaption{color:var(--muted);font-size:18px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
 .diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
 /* footer + slide number */
 .s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
@@ -178,9 +183,9 @@ print(sorted(os.listdir(path)))</pre>
 <section class="slide s-content" data-index="6"><div class="s-ai"><button type="button" class="ai-btn" data-i="6">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="6">Copy all steps so far</button></div><h1 class="s-title">Every File in the Download, and the Two You Use</h1><div class="s-body"><ul>
 <li>The unzip gives you eleven files. Two of them are this course.</li>
 </ul>
-<table class="s-table"><thead><tr><th>File</th><th>Rows</th><th>What it is</th><th>Use it here</th></tr></thead><tbody><tr><td><code>KDDTrain+.txt</code></td><td>125,973</td><td>the training set</td><td>yes</td></tr><tr><td><code>KDDTest+.txt</code></td><td>22,544</td><td>the test set, with 17 attack names never seen in training</td><td>yes</td></tr><tr><td><code>KDDTrain+_20Percent.txt</code></td><td>25,192</td><td>the first 20 percent of <code>KDDTrain+</code>, for quick experiments</td><td>no</td></tr><tr><td><code>KDDTest-21.txt</code></td><td>11,850</td><td><code>KDDTest+</code> minus the 10,694 rows whose <code>difficulty</code> is 21</td><td>no</td></tr><tr><td>four <code>.arff</code> twins</td><td>same</td><td>42 attributes, and the class is only <code>normal</code> or <code>anomaly</code></td><td>no</td></tr><tr><td>two <code>.jpg</code>, <code>index.html</code></td><td>none</td><td>pictures and the Kaggle page, not data</td><td>no</td></tr></tbody></table>
+<table class="s-table"><thead><tr><th>File</th><th>Rows</th><th>What it is</th><th>Use it here</th></tr></thead><tbody><tr><td><code>KDDTrain+.txt</code></td><td>125,973</td><td>the training set</td><td>yes</td></tr><tr><td><code>KDDTest+.txt</code></td><td>22,544</td><td>the test set, with 17 attack names unseen in training</td><td>yes</td></tr><tr><td><code>KDDTrain+_20Percent.txt</code></td><td>25,192</td><td>the first 20 percent of <code>KDDTrain+</code>, for quick runs</td><td>no</td></tr><tr><td><code>KDDTest-21.txt</code></td><td>11,850</td><td><code>KDDTest+</code> minus the 10,694 rows with <code>difficulty</code> 21</td><td>no</td></tr><tr><td>four <code>.arff</code> twins</td><td>same</td><td>42 attributes, class only <code>normal</code> or <code>anomaly</code></td><td>no</td></tr><tr><td>two <code>.jpg</code>, <code>index.html</code></td><td>none</td><td>pictures and the Kaggle page, not data</td><td>no</td></tr></tbody></table>
 <ul>
-<li><code>_20Percent</code> is the <strong>first</strong> 25,192 rows, not a random sample. It keeps the normal-to-attack balance and loses the rarest attack name.</li>
+<li><code>_20Percent</code> is the <strong>first</strong> 25,192 rows, not a random sample: it keeps the balance and loses the rarest attack name.</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">6</div></section>
 <section class="slide s-content" data-index="7"><div class="s-ai"><button type="button" class="ai-btn" data-i="7">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="7">Copy all steps so far</button></div><h1 class="s-title">Three People, Four Things We Know About Them</h1><div class="s-body"><ul>
 <li>Before a file with 43 columns, a dataset small enough to hold in your head.</li>
@@ -211,14 +216,14 @@ print(sorted(os.listdir(path)))</pre>
 <section class="slide s-content" data-index="10"><div class="s-ai"><button type="button" class="ai-btn" data-i="10">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="10">Copy all steps so far</button></div><h1 class="s-title">NSL-KDD Is the Same Picture, Only Wider</h1><div class="s-body"><ul>
 <li>Everything on the last three slides still holds. Only the size changes.</li>
 </ul>
-<table class="s-table"><thead><tr><th>In the coffee table</th><th>In <code>KDDTrain+.txt</code></th></tr></thead><tbody><tr><td>3 rows, one per person</td><td>125,973 rows, one per network connection</td></tr><tr><td>3 feature columns</td><td>41 feature columns</td></tr><tr><td><code>Likes_coffee</code>, the label</td><td><code>class</code>, the label: <code>normal</code> or an attack name</td></tr><tr><td>nothing else</td><td><code>difficulty</code>, metadata about the row, not a feature</td></tr></tbody></table>
+<table class="s-table"><thead><tr><th>In the coffee table</th><th>In <code>KDDTrain+.txt</code></th></tr></thead><tbody><tr><td>3 rows, one per person</td><td>125,973 rows, one per network connection</td></tr><tr><td>3 feature columns</td><td>41 feature columns</td></tr><tr><td><code>Likes_coffee</code>, the label</td><td><code>class</code>, the label: <code>normal</code> or attack name</td></tr><tr><td>nothing else</td><td><code>difficulty</code>, metadata about the row, not a feature</td></tr></tbody></table>
 <ul>
 <li>One row is one connection: what it asked for, how long it lasted, how much it moved, how it ended.</li>
-<li>You cannot hold 125,973 rows in your head. Every claim comes with the code that made it.</li>
+<li>You cannot hold 125,973 rows in your head, so every claim comes with its code.</li>
 </ul>
 <div class="callout c-analogy"><span class="c-label">Analogy</span><span class="c-body">Same spreadsheet, more sheets. Going from 3 rows to 125,973 changes what you can see by eye, not what a row or a column means.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
 <section class="slide s-content" data-index="11"><div class="s-ai"><button type="button" class="ai-btn" data-i="11">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="11">Copy all steps so far</button></div><h1 class="s-title">The File Has No Header, So You Name the Columns</h1><div class="s-body"><ul>
-<li>The <code>.txt</code> files have no header row. The <code>.arff</code> twin does, so take the names from there. Nobody types 41 names: when a spelling is in doubt, print <code>train.columns</code> rather than trust a slide.</li>
+<li>The <code>.txt</code> files have no header row. The <code>.arff</code> twin does, so take the names from there.</li>
 </ul>
 <pre class="code">arff = open(os.path.join(path, &quot;KDDTrain+.arff&quot;))
 NAMES = [l.split()[1].strip(&quot;&#x27;&quot;) for l in arff if l.lower().startswith(&quot;@attribute&quot;)]
@@ -29541,8 +29546,8 @@ z
 <section class="slide s-content" data-index="51"><div class="s-ai"><button type="button" class="ai-btn" data-i="51">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="51">Copy all steps so far</button></div><h1 class="s-title">Worked Example: A Column That Is Cheating</h1><div class="s-body"><pre class="code">train.groupby(train[&quot;class&quot;].eq(&quot;normal&quot;))[&quot;difficulty&quot;].mean()</pre>
 <div class="term"><div class="term-title">Result</div><div class="term-body"><div class="t-line t-out">class</div><div class="t-line t-out">False    18.57      (attacks)</div><div class="t-line t-out">True     20.32      (normal)</div></div></div>
 <ul>
-<li><strong>Issue</strong>: <code>difficulty</code> counts how many of <strong>21 classifiers got this row right</strong>, scored after the fact. No sensor measured it.</li>
-<li><strong>Tools</strong>: for every column ask, could this have been observed at the moment the connection happened.</li>
+<li><strong>Issue</strong>: <code>difficulty</code> counts how many of <strong>21 classifiers got this row right</strong>, scored after the fact. No sensor saw it.</li>
+<li><strong>Tools</strong>: for every column ask, could a sensor have observed this at the time.</li>
 <li><strong>Solution</strong>: drop it from the features. Keep it to report which rows are hard.</li>
 </ul>
 <div class="callout c-def"><span class="c-label">Definition</span><span class="c-body"><strong>21 is the easy end, 0 is the hard end.</strong> All 21 classifiers got that row right, 0 means none did.</span></div>
@@ -31560,7 +31565,7 @@ z
 <section class="slide s-content" data-index="54"><div class="s-ai"><button type="button" class="ai-btn" data-i="54">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="54">Copy all steps so far</button></div><h1 class="s-title">How To Present What You Found</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">State the question, then the measurement, then the number. In that order.</span></li><li><span class="step-n">2</span><span class="step-t">Show the code that produced it, so a reader can re-run it.</span></li><li><span class="step-n">3</span><span class="step-t">Name the consequence for the model, not just the statistic.</span></li><li><span class="step-n">4</span><span class="step-t">Say what you changed and what you deliberately did not.</span></li></ol>
 <div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">A result nobody can reproduce is an opinion. Your capstone is graded on whether someone else can run it and get your numbers.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">54</div></section>
 <section class="slide s-content" data-index="55"><div class="s-ai"><button type="button" class="ai-btn" data-i="55">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="55">Copy all steps so far</button></div><h1 class="s-title">What To Read, and the Exercise That Repeats This on Other Data</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Section 3.5, Analyzing and Visualizing Datasets, is Slides 18 and 19: summarize, then look.</span></li><li><span class="step-n">2</span><span class="step-t">Section 4.2, Implementing Libraries to Create AI Solutions with Ease, holds the Data Charting Libraries pages behind Slide 28.</span></li><li><span class="step-n">3</span><span class="step-t">Section 5.4, Preparing Data for Success, is Slides 48 and 51: scale, cleaning, and columns that cheat.</span></li><li><span class="step-n">4</span><span class="step-t">Code It Programming Exercise 4-1, Mapping COVID-19 Cases by County. Open it from MindTap, where the data file comes with it.</span></li></ol>
-<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">Exercise 4-1 asks you to divide cases by population to build a rate column. NSL-KDD's designers made that same move fifteen times, once for each column you measured on Slide 49. Different data, one idea.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">55</div></section>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">Exercise 4-1 divides cases by population to build a rate column. NSL-KDD's designers made that move fifteen times, once per column you measured on Slide 49.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">55</div></section>
 <section class="slide s-activity" data-index="56"><h1 class="s-title">In-Class Activity</h1><div class="s-body"><ol class="steps"><li><span class="step-n">1</span><span class="step-t">Load both files and confirm the shapes match what is on Slide 11.</span></li><li><span class="step-n">2</span><span class="step-t">Find every column with one distinct value. Report how many you found.</span></li><li><span class="step-n">3</span><span class="step-t">Compute the family share of each file and name the family that shifts most.</span></li><li><span class="step-n">4</span><span class="step-t">Pick one numeric column and report median, 99th percentile and maximum. Decide whether it needs a transform, and say why.</span></li><li><span class="step-n">5</span><span class="step-t">Write four sentences: Analysis, Issue, Tools, Solution, for the column you chose.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">56</div></section>
 <section class="slide s-exit" data-index="57"><h1 class="s-title">Exit Ticket</h1><div class="s-body"><ul>
 <li>Name one column in NSL-KDD you would drop before training, and the reason.</li>

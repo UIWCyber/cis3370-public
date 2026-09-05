@@ -14,14 +14,19 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(--sans)}
 #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#0c0c0d}
-#deck{width:1280px;height:720px;position:relative;transform-origin:center center;background:var(--slate)}
+/* flex:none is load-bearing. #stage is a flex container, so without it the deck
+   inherits flex-shrink:1 and squeezes to the window width whenever that is under
+   1280, while height stays 720: the canvas turns 4:3, and every slide re-wraps in a
+   narrower box and clips. It only shows up in a small or zoomed window, which is
+   exactly the projector. */
+#deck{width:1280px;height:720px;flex:none;position:relative;transform-origin:center center;background:var(--slate)}
 .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:54px 64px 48px;background:var(--slate)}
 .slide.active{display:flex}
 .slide.s-title,.slide.s-section{align-items:flex-start;justify-content:center}
 /* accent rails */
 #deck::before{content:"";position:absolute;top:0;left:0;right:0;height:8px;background:var(--red);z-index:5}
 .s-title{background:var(--slate)}
-.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:19px}
+.s-table{border-collapse:collapse;width:100%;margin:14px 0;font-size:22px}
 .s-table th{background:#26262a;color:#fff;text-align:left;font-weight:700;padding:8px 12px;border-bottom:2px solid var(--red)}
 .s-table td{padding:8px 12px;border-bottom:1px solid #34343a;color:#e8e8ea;vertical-align:top}
 .s-table tr:last-child td{border-bottom:none}
@@ -49,10 +54,10 @@ h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bott
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
 .s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
-.lead{color:var(--muted);font-size:21px;margin:0 0 6px}
+.lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
-li.sub{list-style:circle;color:var(--muted);font-size:20px}
+li.sub{list-style:circle;color:var(--muted);font-size:21px}
 strong{color:#fff}
 em{color:var(--red-lt);font-style:normal;font-weight:600}
 /* A link on a dark slide left at the browser default is #0000EE, which is 1.85:1
@@ -72,7 +77,7 @@ ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel)
 .step-t{padding-top:4px}
 /* callouts */
 .callout{display:flex;gap:12px;align-items:flex-start;border-radius:10px;padding:12px 16px;background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--red);font-size:24px}
-.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:16px;padding-top:3px}
+.callout .c-label{flex:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:17px;padding-top:3px}
 .c-def{border-left-color:var(--red)} .c-def .c-label{color:var(--red-lt)}
 .c-note{border-left-color:#5a8fd6} .c-note .c-label{color:#8fb8ea}
 .c-warn{border-left-color:var(--amb)} .c-warn .c-label{color:var(--amb)}
@@ -80,8 +85,8 @@ ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel)
 .c-analogy{border-left-color:#b48ad9} .c-analogy .c-label{color:#c6a6e6}
 .c-why{border-left-color:var(--red-lt)} .c-why .c-label{color:var(--red-lt)}
 /* terminal */
-.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:18px;margin:4px 0}
-.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:14px;border-bottom:1px solid #2a2c33}
+.term{background:#0f1013;border:1px solid #33353c;border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:20px;margin:4px 0}
+.term-title{background:#191b20;color:var(--muted);padding:6px 14px;font-family:var(--sans);font-size:16px;border-bottom:1px solid #2a2c33}
 .term-body{padding:12px 16px;line-height:1.5}
 .t-line{white-space:pre-wrap;word-break:break-word}
 .t-in{color:#eaeaea}
@@ -91,7 +96,7 @@ ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel)
 .t-ann{color:#6f7681;font-style:italic;margin-left:10px}
 .t-out{color:#9fa6b0}
 /* code block */
-pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:17px;color:#d8dee9;overflow:auto;margin:4px 0}
+pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:19px;color:#d8dee9;overflow:auto;margin:4px 0}
 /* diagrams */
 .diagram-wrap{display:flex;justify-content:center;align-items:center;flex:1;min-height:0}
 /* The figure is a column that may not outgrow the space the slide gives it, and the
@@ -106,7 +111,7 @@ pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:
    align-items keeps an engine figure, which carries its own width, centred inside it. */
 .diagram-wrap figure{margin:0;text-align:center;display:flex;flex-direction:column;
   align-items:center;min-height:0;max-height:100%;width:100%}
-.diagram-wrap figcaption{color:var(--muted);font-size:16px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
+.diagram-wrap figcaption{color:var(--muted);font-size:18px;line-height:1.35;margin:8px auto 0;max-width:1080px;font-family:var(--sans);flex:0 0 auto}
 .diag-err{color:var(--amb);border:1px dashed var(--amb);padding:10px;border-radius:8px;font-family:var(--mono);font-size:15px}
 /* footer + slide number */
 .s-ai{position:absolute;right:64px;top:14px;display:flex;gap:8px;z-index:5}
@@ -172,7 +177,11 @@ pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:
 <li>What the machine itself is doing: who is logged in, how much is running, how hard it is working.</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">8</div></section>
 <section class="slide s-content" data-index="9"><h1 class="s-title">Nine Columns, and Why Each One Earns Its Place</h1><div class="s-body"><table class="s-table"><thead><tr><th>Column</th><th>What it answers</th><th>Why an IDS cares</th></tr></thead><tbody><tr><td><code>date</code></td><td>when the sample was taken</td><td>every later join is on time</td></tr><tr><td><code>hostname</code></td><td>which machine</td><td>one file per machine stops being ambiguous</td></tr><tr><td><code>users</code></td><td>how many are logged in</td><td>a second session at 3 AM is a question</td></tr><tr><td><code>processes</code></td><td>how much is running</td><td>a jump is a payload or a build</td></tr><tr><td><code>failed_logins</code></td><td>how many rejected sign-ins</td><td>the oldest signal there is</td></tr><tr><td><code>uptime_s</code></td><td>how long since boot</td><td>a reboot resets everything else</td></tr><tr><td><code>load_1m</code>, <code>load_5m</code>, <code>load_15m</code></td><td>how busy, over three windows</td><td>slow drift shows in the long window first</td></tr></tbody></table></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">9</div></section>
-<section class="slide s-diagram" data-index="10"><h1 class="s-title">The Measurement Is the Constant, the Command Is the Variable</h1><div class="s-body"><figure class="diagram" data-spec="38e1a0794c7b"><svg aria-labelledby="dt-38e1a0794c7b" aria-describedby="dc-38e1a0794c7b" viewBox="0 0 922 336" width="922" height="336" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace"><title id="dt-38e1a0794c7b">The same four measurements, three operating systems, different commands</title><defs><marker id="ah" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#c9ccd1"/></marker><marker id="ahs" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#cb333b"/></marker></defs><text x="22" y="24" fill="#e8565f" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700">The same four measurements, three operating systems, different commands</text><rect x="22" y="40" width="878" height="50" rx="8" fill="#26191b" stroke="#5a3034" stroke-width="1"/><text x="325.0" y="69.0" fill="#cb333b" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="14" font-weight="700" text-anchor="middle">Linux</text><text x="555.0" y="69.0" fill="#cb333b" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="14" font-weight="700" text-anchor="middle">macOS</text><text x="785.0" y="69.0" fill="#cb333b" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="14" font-weight="700" text-anchor="middle">Windows</text><text x="34.0" y="122.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Logged-in users</text><text x="325.0" y="122.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">who</text><text x="555.0" y="122.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">who</text><text x="785.0" y="122.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">query user</text><rect x="22" y="146" width="878" height="56" fill="#1c1517" opacity="0.5"/><text x="34.0" y="178.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Processes</text><text x="325.0" y="178.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">ps -e</text><text x="555.0" y="178.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">ps -A</text><text x="785.0" y="178.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">Get-Process</text><text x="34.0" y="234.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Uptime</text><text x="325.0" y="234.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">/proc/uptime</text><text x="555.0" y="234.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">sysctl kern.boottime</text><text x="785.0" y="234.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">Get-Uptime</text><rect x="22" y="258" width="878" height="56" fill="#1c1517" opacity="0.5"/><text x="34.0" y="290.0" fill="#f4a0a6" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="700" text-anchor="start">Load</text><text x="325.0" y="290.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">uptime</text><text x="555.0" y="290.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">uptime</text><text x="785.0" y="290.0" fill="#f4f4f4" font-family="'JetBrains Mono','DejaVu Sans Mono',ui-monospace,Menlo,monospace" font-size="13" font-weight="400" text-anchor="middle">Get-Counter</text><line x1="210" y1="40" x2="210" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="440" y1="40" x2="440" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="670" y1="40" x2="670" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="900" y1="40" x2="900" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><line x1="22" y1="40" x2="22" y2="314" stroke="#5a3034" stroke-width="1" opacity="0.5"/><rect x="22" y="40" width="878" height="274" rx="8" fill="none" stroke="#5a3034" stroke-width="1"/></svg><figcaption id="dc-38e1a0794c7b">The column name in your log file stays the same on all three. That is the whole idea behind a common schema.</figcaption></figure></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
+<section class="slide s-diagram" data-index="10"><h1 class="s-title">The Measurement Is the Constant, the Command Is the Variable</h1><div class="s-body"><ul>
+<li>The same four measurements, three operating systems, different commands.</li>
+</ul>
+<table class="s-table"><thead><tr><th>Measurement</th><th>Linux</th><th>macOS</th><th>Windows</th></tr></thead><tbody><tr><td>Logged-in users</td><td><code>who</code></td><td><code>who</code></td><td><code>query user</code></td></tr><tr><td>Processes</td><td><code>ps -e</code></td><td><code>ps -A</code></td><td><code>Get-Process</code></td></tr><tr><td>Uptime</td><td><code>/proc/uptime</code></td><td><code>sysctl kern.boottime</code></td><td><code>Get-Uptime</code></td></tr><tr><td>Load</td><td><code>uptime</code></td><td><code>uptime</code></td><td><code>Get-Counter</code></td></tr></tbody></table>
+<div class="callout c-why"><span class="c-label">Why it matters</span><span class="c-body">The column name in your log file stays the same on all three. That is the whole idea behind a common schema.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">10</div></section>
 <section class="slide s-content" data-index="11"><div class="s-ai"><button type="button" class="ai-btn" data-i="11">Copy this step for Claude</button><button type="button" class="ai-btn ai-all" data-i="11">Copy all steps so far</button></div><h1 class="s-title">Write the Collector for the Machine You Actually Have</h1><div class="s-body"><ul>
 <li>You are not writing this by hand. You are telling an agent what to measure, and checking what it wrote.</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">11</div></section>
