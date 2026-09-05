@@ -69,10 +69,15 @@ a:hover,a:focus-visible{color:#fff;text-decoration-thickness:2px}
 code{font-family:var(--mono);background:#15161a;color:#ffd9b0;padding:2px 7px;border-radius:5px;font-size:.9em}
 p{margin:6px 0}
 /* objectives */
-ol.objectives li,ol.steps li{margin:12px 0}
+/* A step card holds one line of text in 24px, which is 34px of ink, and used to
+   cost 78px of slide: 24px of padding and 24px of margin around it. Four cards
+   spent 314px of a 546px body on three lines of actual content. Tightened, a card
+   is 66px and four fit in 264px, which is the difference between a demo slide that
+   shows its terminal output and one that silently eats the last lines. */
+ol.objectives li,ol.steps li{margin:8px 0}
 /* step cards */
 ol.steps{list-style:none;padding:0;counter-reset:none}
-ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:12px 16px}
+ol.steps li{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:10px;padding:10px 16px}
 .step-n{flex:none;width:34px;height:34px;border-radius:8px;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
 .step-t{padding-top:4px}
 /* callouts */
@@ -103,8 +108,12 @@ pre.code{background:#0f1013;border:1px solid #33353c;border-radius:10px;padding:
    caption is the part that must never be the bit that gets pushed out: the drawing
    can shrink, the sentence explaining it cannot. Without this the svg claimed its
    full max-height and the caption spilled under whatever came next on the slide,
-   silently, looking correct in the source. */
-.diagram-wrap svg{max-width:100%;max-height:400px;height:auto;min-height:0;flex:0 1 auto}
+   silently, looking correct in the source.
+   max-height is 100%, not a fixed pixel cap: the wrap is already flex:1 with
+   min-height:0, so the drawing takes the room the slide actually has and shrinks
+   only when the slide is full. A fixed cap shrank figures that had space to spare,
+   which costs label size on a projector for nothing. */
+.diagram-wrap svg{max-width:100%;max-height:100%;height:auto;min-height:0;flex:0 1 auto}
 /* width:100% because a flex item is otherwise sized by its widest child, which here is
    the caption: without it a figure came out as wide as its sentence happened to be, and
    a short caption shrank the drawing until its labels could not be read from the room.
