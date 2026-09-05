@@ -137,7 +137,11 @@ ol.steps.steps-cols-2 li,ol.steps.steps-cols-3 li{margin:0}
 .step-t .sub{display:block;color:var(--muted);font-size:21px;margin-top:2px}
 ul.tree{list-style:none;padding-left:0}
 ul.tree ul{list-style:none;padding-left:34px;border-left:2px solid var(--line);margin:4px 0 4px 10px}
-ul.tree li{margin:6px 0}
+ul.tree li{margin:4px 0}
+/* A taxonomy with more than six leaves runs its top-level branches in two
+   columns; each branch stays whole inside its column. */
+ul.tree.tree-cols-2>li>ul{column-count:2;column-gap:40px;border-left:none;padding-left:0;margin-left:0}
+ul.tree.tree-cols-2>li>ul>li{break-inside:avoid;padding-left:22px;border-left:2px solid var(--line);margin:0 0 10px}
 /* width:100% because a flex item is otherwise sized by its widest child, which here is
    the caption: without it a figure came out as wide as its sentence happened to be, and
    a short caption shrank the drawing until its labels could not be read from the room.
