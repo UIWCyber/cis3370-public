@@ -263,7 +263,7 @@ footer .links a{font-weight:600}
     <div class="hero-grid">
       <div class="hero-card">
         <div class="lbl">Class Meetings</div>
-        <div class="val">Tue &amp; Thu · 3:00–4:15 PM<small>Founders Hall G008 · Aug 25 – Dec 3</small></div>
+        <div class="val">Tue &amp; Thu · 3:00–4:15 PM<small>Founders Hall G014 · Aug 25 – Dec 3</small></div>
       </div>
       <div class="hero-card">
         <div class="lbl">Instructor</div>
@@ -640,7 +640,7 @@ function renderThisWeek(state){
     var n = state.daysUntil;
     html = '<div class="countdown">'
       + '<div><div class="num">'+n+'</div><div style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">day'+(n===1?"":"s")+' to go</div></div>'
-      + '<div class="cap"><strong>First class: Tuesday</strong> - 3:00 PM, Founders Hall G008.<br>'
+      + '<div class="cap"><strong>First class: Tuesday</strong> - 3:00 PM, Founders Hall G014.<br>'
       + 'Get ahead: make sure you can log in to Canvas and GitHub, and that <code>awk</code>, <code>sed</code> and <code>python3</code> run on your machine.</div>'
       + '</div>';
   } else if (state.phase === "post"){
@@ -670,7 +670,7 @@ function renderThisWeek(state){
     if (isFinals){
       html += '<div class="tw-note">There is no final exam and no finals-week meeting in this course. The semester ends with your capstone presentations.</div>';
     } else {
-      html += '<div class="tw-note">Class meets Tue &amp; Thu 3:00–4:15 PM in Founders Hall G008 · Office hours Mon–Thu 1:30–3:00 PM in Founders Hall G009</div>';
+      html += '<div class="tw-note">Class meets Tue &amp; Thu 3:00–4:15 PM in Founders Hall G014 · Office hours Mon–Thu 1:30–3:00 PM in Founders Hall G009</div>';
     }
   }
   card.innerHTML = html;
