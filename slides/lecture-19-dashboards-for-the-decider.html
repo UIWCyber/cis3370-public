@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CIS 3370 Intrusion Detection Systems - Session 18: Stage 8: Dashboards for the Person Who Has To Decide</title>
+<title>CIS 3370 Intrusion Detection Systems - Session 19: Stage 8: Dashboards for the Person Who Has To Decide</title>
 <style>
 :root{
   --slate:#222222; --slate2:#2b2b2e; --panel:#2c2f34; --panel2:#333;
@@ -196,7 +196,7 @@ ul.tree.tree-cols-2>li>ul>li{break-inside:avoid;padding-left:22px;border-left:2p
 <body>
 <div id="prog"></div>
 <div id="stage"><div id="deck">
-<section class="slide s-title" data-index="1"><div class="title-band"><div class="title-kicker">CIS 3370 Intrusion Detection Systems</div><h1 class="title-main">Stage 8: Dashboards for the Person Who Has To Decide</h1><div class="title-meta">Session 18 &nbsp;·&nbsp; M4 - Response, from Alert to Decision</div><div class="title-sub">Outcomes: CO2, CO4 &nbsp;·&nbsp; Dr. Gonzalo D Parra</div></div><div class="s-num">1</div></section>
+<section class="slide s-title" data-index="1"><div class="title-band"><div class="title-kicker">CIS 3370 Intrusion Detection Systems</div><h1 class="title-main">Stage 8: Dashboards for the Person Who Has To Decide</h1><div class="title-meta">Session 19 &nbsp;·&nbsp; M4 - Response, from Alert to Decision</div><div class="title-sub">Outcomes: CO2, CO4 &nbsp;·&nbsp; Dr. Gonzalo D Parra</div></div><div class="s-num">1</div></section>
 <section class="slide s-objectives" data-index="2"><h1 class="s-title">Learning Objectives</h1><div class="s-body"><p class="lead">By the end of this session you will be able to:</p><ol class="objectives"><li>- Name the decision a dashboard exists to support, before building any panel.</li><li>- Build panels in Kibana from the course data and arrange them in the order a person reads.</li><li>- Import and export dashboards as saved objects, and say why that matters for reproducibility.</li><li>- Say what a dashboard cannot tell you, and what belongs in a report instead.</li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">2</div></section>
 <section class="slide s-section" data-index="3"><h1 class="s-title vis-hidden">A Dashboard Is Not a Summary</h1><div class="s-body"><ul>
 <li>It is a tool for a person who has to decide something, under time pressure, repeatedly.</li>
@@ -244,7 +244,7 @@ ul.tree.tree-cols-2>li>ul>li{break-inside:avoid;padding-left:22px;border-left:2p
 <div id="grid"></div>
 <script>window.__NOTES__="";
 window.__PROMPTS__={"7": {"title": "Import the Starter, Then Change It", "text": "Import tools/elastic/starter-dashboard.ndjson into my Kibana through the saved objects API,\nand tell me exactly what it created. Then open the dashboard, set the time range to the\ncapture window from MANIFEST.md, and tell me the number shown in each panel. If a panel is\nempty, work out whether the cause is the time range, a missing index, or a missing data view,\nand say which.\nThen update ids-report.html for this step, as agreed."}, "10": {"title": "The Four Choices in Every Panel", "text": "In Kibana, create a panel on the zeek-conn data view that shows the top ten destination ports\nby number of connections in the capture window. Tell me the clicks in order, then verify the\nresult by running the same aggregation through the search API and comparing the numbers.\nPrint both.\nThen update ids-report.html for this step, as agreed."}, "14": {"title": "Make One Decision Visible", "text": "Design and build a single panel that would help someone decide whether to escalate right now.\nTell me what decision it supports, what number would change the answer, and why you chose that\nvisualization. Build it in Kibana, add it to the dashboard, and then export the dashboard again\nso the new panel is in the saved objects. Print what the export contains.\nThen update ids-report.html for this step, as agreed."}};
-window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems. We are working through session 18, \"Stage 8: Dashboards for the Person Who Has To Decide\". You are running the code, not describing it: do each step, show me the commands you ran and the real output they produced, and keep any explanation to a line or two. I am a beginner, so use plain words.";</script>
+window.__DECK_CONTEXT__="I am a student in CIS 3370 Intrusion Detection Systems. We are working through session 19, \"Stage 8: Dashboards for the Person Who Has To Decide\". You are running the code, not describing it: do each step, show me the commands you ran and the real output they produced, and keep any explanation to a line or two. I am a beginner, so use plain words.";</script>
 <script>
 (function(){
   var deck=document.getElementById('deck'), stage=document.getElementById('stage');
