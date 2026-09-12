@@ -86,16 +86,17 @@
     <li><strong>Every member presents.</strong> Delivery credit requires each member to present the user stories they contributed to.</li>
     <li><strong>Missing your slot costs 15%.</strong> A missed scheduled presentation slot is an automatic 15% deduction from the team's total capstone grade.</li>
     <li><strong>No late final work.</strong> The final wiki, repo, board, and presentation are not accepted late.</li>
-    <li><strong>Demo fallback required.</strong> A recorded demo must be in the repo. If the live demo fails, switch to the recording and keep going; a working artifact is not penalized heavily for a failed cable.</li>
+    <li><strong>Recorded run required.</strong> A recording of your pipeline running from a clean checkout must be in the repo. If the live run fails, switch to the recording and keep going; a working artifact is not penalized heavily for a failed cable.</li>
   </ul>
 
-  <h2>Required Structure (Build, Attack, Defend)</h2>
+  <h2>Required Structure (the Reproduction)</h2>
   <ol class="beats">
-    <li>The claim you set out to reproduce, and the result you measured, side by side.</li>
-    <li>Which course modules you integrated (at least three) and how they connect.</li>
-    <li>The attack: demonstrate the threat, ideally showing it blocked live after defenses.</li>
-    <li>The defenses: which controls you implemented and how you verified them, with before/after.</li>
-    <li>Residual risk and lessons learned, honestly stated.</li>
+    <li><strong>The paper and its claim in one sentence:</strong> what number, on what data, under what split, and the table it comes from.</li>
+    <li><strong>The data:</strong> which dataset and version, how you obtained it, how many rows, and what you had to drop or repair.</li>
+    <li><strong>The pipeline you rebuilt:</strong> the stages end to end, and the baseline you scored before the paper's method.</li>
+    <li><strong>Your result beside the paper's:</strong> one comparison table, with every choice the paper did not state that you had to make.</li>
+    <li><strong>What would settle the gap:</strong> the experiment you did not have time to run, and what you expect it would show.</li>
+    <li><strong>Who did what:</strong> the contribution table from your README, on a slide.</li>
   </ol>
 
   <h2>Criteria Preview (matches the grading sheet)</h2>
@@ -103,25 +104,25 @@
 
   <div class="crit">
     <div class="head">
-      <h3>Technical demo</h3>
+      <h3>Live reproduction</h3>
       <span class="weight">40%</span>
     </div>
     <div class="descriptors">
-      <div class="desc-row"><span class="lvl exc">Excellent</span><span>A live demo shows the attack being blocked or a policy being enforced, not just described. The before/after is convincing and the team drives it confidently.</span></div>
-      <div class="desc-row"><span class="lvl adq">Adequate</span><span>A demo runs (live or via the required recording) and shows the defense working, but part of it is described rather than shown.</span></div>
-      <div class="desc-row"><span class="lvl miss">Missing or weak</span><span>No working demo shown live or recorded, or the demo does not actually show a control blocking the attack or enforcing a policy.</span></div>
+      <div class="desc-row"><span class="lvl exc">Excellent</span><span>The repository runs from a clean checkout in front of the room and reproduces at least one number from the comparison table, live. The team drives it confidently and knows what each step is doing.</span></div>
+      <div class="desc-row"><span class="lvl adq">Adequate</span><span>The pipeline runs, live or via the required recording, and produces a number, but part of it is described rather than shown, or the run starts from saved intermediate files rather than a clean checkout.</span></div>
+      <div class="desc-row"><span class="lvl miss">Missing or weak</span><span>Nothing is run live or recorded, or what runs does not produce any number that appears in the report.</span></div>
     </div>
   </div>
 
   <div class="crit">
     <div class="head">
-      <h3>Content and architecture</h3>
+      <h3>The reproduction, told honestly</h3>
       <span class="weight">30%</span>
     </div>
     <div class="descriptors">
-      <div class="desc-row"><span class="lvl exc">Excellent</span><span>A clear account of what was built, which course modules were integrated, and an insightful walkthrough of the architecture that a listener could follow and redraw.</span></div>
-      <div class="desc-row"><span class="lvl adq">Adequate</span><span>What was built and which modules were used are covered, but the architecture walkthrough is thin or the module connections are vague.</span></div>
-      <div class="desc-row"><span class="lvl miss">Missing or weak</span><span>The build is unclear, fewer than three modules are shown, or the architecture is not explained.</span></div>
+      <div class="desc-row"><span class="lvl exc">Excellent</span><span>The claim, the data, the pipeline and the comparison table are all clear, and the team names every choice the paper left unstated and what it did about each. A listener could go and repeat the work.</span></div>
+      <div class="desc-row"><span class="lvl adq">Adequate</span><span>The claim and the result are covered and compared, but the unstated choices are glossed over, or the baseline is missing, or the pipeline walkthrough is too thin to repeat.</span></div>
+      <div class="desc-row"><span class="lvl miss">Missing or weak</span><span>There is no side-by-side comparison with the paper, or the claim being reproduced is never stated in one sentence, or a mismatch is presented as a success.</span></div>
     </div>
   </div>
 
@@ -143,11 +144,11 @@
 
   <h2>Tips</h2>
   <ul class="tips">
-    <li><strong>Lead with the live demo.</strong> Open by showing the attack blocked or the policy enforced; it earns the most and sets the tone.</li>
-    <li><strong>Show before/after of the attack.</strong> Demonstrate the threat succeeding against the undefended environment, then show it stopped after your control.</li>
-    <li><strong>Be honest about residual risk.</strong> Saying "this still partially works, here is our compensating control" reads as maturity, not weakness.</li>
+    <li><strong>Lead with the comparison table.</strong> The paper's number beside yours, on the second slide. Everything after it is explanation.</li>
+    <li><strong>Run it from a clean checkout.</strong> Clone into an empty directory in front of the room and let it produce one number. That is the whole demo.</li>
+    <li><strong>A gap is a result, not a failure.</strong> "We got 0.81 where the paper reports 0.94, and here are the three choices it did not state" is the strongest thing you can say. Rank the explanations, and check your own work before blaming theirs.</li>
     <li><strong>Rehearse handoffs and timing.</strong> Practice the full run so every member's part is smooth and you land inside 10 to 15 minutes.</li>
-    <li><strong>Have the recording ready.</strong> If the live demo fails, switch to the recorded fallback and keep going.</li>
+    <li><strong>Have the recording ready.</strong> If the live run fails, switch to the recorded one and keep going.</li>
   </ul>
 
   <h2>Self-Check Before You Present</h2>
@@ -155,8 +156,8 @@
     <div class="field"><label for="team-name">Team name</label><input type="text" id="team-name" placeholder="Team name"></div>
     <div class="field"><label for="presenters">Presenters (every member speaking)</label><input type="text" id="presenters" placeholder="Member names"></div>
   </div>
-  <div class="field"><label for="demo-plan">Live demo plan (what you will show being blocked or enforced)</label><textarea id="demo-plan" placeholder="The exact moment you will show the control working"></textarea></div>
-  <div class="field"><label for="fallback-link">Recorded fallback location</label><input type="text" id="fallback-link" placeholder="where the recording lives in the repo"></div>
+  <div class="field"><label for="demo-plan">Live run plan (the number you will reproduce in front of the room)</label><textarea id="demo-plan" placeholder="The command you will run and the number it will print"></textarea></div>
+  <div class="field"><label for="fallback-link">Recorded run location</label><input type="text" id="fallback-link" placeholder="where the recording of the clean-checkout run lives in the repo"></div>
   <div class="field"><label for="timing">Rehearsed run time (target 10 to 15 minutes)</label><input type="text" id="timing" placeholder="e.g., 12 minutes in the last dry-run"></div>
 </div>
 
