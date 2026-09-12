@@ -128,6 +128,7 @@ nav.hubnav a:hover{color:var(--red);background:var(--red-soft);text-decoration:n
 .tw-session .t{margin:.15rem 0 .3rem;font-weight:600}
 .tw-session.noclass .t{color:var(--muted);font-style:italic;font-weight:500}
 .tw-note{margin-top:.75rem;font-size:.88rem;color:var(--muted)}
+.labs{margin-top:.25rem;font-size:.82rem;color:var(--muted)}
 .countdown{display:flex;align-items:center;flex-wrap:wrap;gap:1.2rem}
 .countdown .num{font-size:3rem;font-weight:800;color:var(--red);line-height:1}
 .countdown .cap{font-size:1rem;color:var(--muted);max-width:28rem}
@@ -332,7 +333,7 @@ footer .links a{font-weight:600}
   <div class="wrap">
     <p class="kicker">How You're Graded</p>
     <h2>Grading Breakdown</h2>
-    <p class="sub">Assignments are the MindTap Code It labs, autograded in MindTap. The pipeline work in each lecture is practice for the capstone and is not graded.</p>
+    <p class="sub">Assignments are the six MindTap programming exercises marked graded on the schedule, autograded, open from the first day and due Dec 4. The pipeline work in each lecture is practice for the capstone and is not graded.</p>
 
     <div class="gbar" role="img" aria-label="Grade weights: Assignments 45%, Capstone 45%, Attendance 10%">
       <div class="seg g-labs" style="flex:45"><span>Assignments 45%</span></div>
@@ -340,7 +341,7 @@ footer .links a{font-weight:600}
       <div class="seg g-att" style="flex:10"><span>10%</span></div>
     </div>
     <div class="glegend">
-      <span><span class="dot g-labs"></span>Assignments (MindTap Code It labs, autograded) - 45%</span>
+      <span><span class="dot g-labs"></span>Assignments (six MindTap programming exercises, autograded) - 45%</span>
       <span><span class="dot g-cap"></span>Capstone reproduction project - 45%</span>
       <span><span class="dot g-att"></span>Attendance &amp; Participation - 10%</span>
     </div>
@@ -502,25 +503,25 @@ var SESSIONS = [
   {wk:3,  date:"2026-09-10", day:"Thu", topic:"Lecture 4, continued: nominal columns, counts and the chi-square test", note:"", tags:["lecture"]},
   {wk:4,  date:"2026-09-15", day:"Tue", topic:"Lecture 4, continued: chi-square, chance and the p-value, Cramer's V", note:"", tags:["lecture"]},
   {wk:4,  date:"2026-09-17", day:"Thu", topic:"Lecture 4, continued: ordinal columns and rank tests, amounts and the bell", note:"", tags:["lecture"]},
-  {wk:5,  date:"2026-09-22", day:"Tue", topic:"Lecture 4, continued: t-test, correlation, the decision trees, IID and the loop", note:"Lecture 4 ends", tags:["lecture"]},
+  {wk:5,  date:"2026-09-22", day:"Tue", topic:"Lecture 4, continued: t-test, correlation, the decision trees, IID and the loop", note:"Lecture 4 ends", labs:"Practice: Application 3-1 (charts, trends and outliers in Sheets)", tags:["lecture"]},
   {wk:5,  date:"2026-09-24", day:"Thu", topic:"Lecture 5: Reading a paper like an engineer, and the reproduction workshop, with the proposal form and the readiness checklist", note:"", tags:["lecture", "capstone"]},
-  {wk:6,  date:"2026-09-29", day:"Tue", topic:"Lecture 6: Stage 1, data generation, traffic and attack simulation, with tcpdump and nmap", note:"Book chapter 1 in class (selected slides) · MindTap labs 1-1 and 1-2 assigned", tags:["lecture"]},
+  {wk:6,  date:"2026-09-29", day:"Tue", topic:"Lecture 6: Stage 1, data generation, traffic and attack simulation, with tcpdump and nmap", note:"Book chapter 1 in class (selected slides)", labs:"Graded: Programming 1-1. Practice: Programming 1-2 · Application 1-2 · Project 1-1", tags:["lecture"]},
   {wk:6,  date:"2026-10-01", day:"Thu", topic:"Group project day", note:"Instructor not present · teams work on the capstone", tags:["gpday"]},
   {wk:7,  date:"2026-10-06", day:"Tue", topic:"Lecture 7: Stage 2, data collection, with Zeek, Suricata and Elastic Agent", note:"", tags:["lecture"]},
   {wk:7,  date:"2026-10-08", day:"Thu", topic:"Lecture 8: Stage 3, structuring, from text to fields, with grok, dissect and ECS", note:"", tags:["lecture"]},
   {wk:8,  date:"2026-10-13", day:"Tue", topic:"Lecture 9: Storage and query, Elasticsearch mappings, search and aggregations", note:"", tags:["lecture"]},
   {wk:8,  date:"2026-10-15", day:"Thu", topic:"No class", note:"Fall Break (Oct 15 to 16, university calendar)", tags:["noclass"]},
-  {wk:9,  date:"2026-10-20", day:"Tue", topic:"Lecture 10: Stage 4, preprocessing, encoding, scaling, imbalance, with scikit-learn (book ch 5.4)", note:"Book chapter 5 in class (selected slides) · MindTap lab 5-2 assigned", tags:["lecture"]},
-  {wk:9,  date:"2026-10-22", day:"Thu", topic:"Lecture 11: Classical baselines, logistic regression, decision tree and k-NN in scikit-learn (book ch 3.3)", note:"Book chapter 3 in class (selected slides) · MindTap lab 3-2 assigned", tags:["lecture"]},
-  {wk:10, date:"2026-10-27", day:"Tue", topic:"Lecture 12: Evaluation, the metrics that matter for detection, with scikit-learn (book ch 4.4)", note:"Book chapter 4 in class (selected slides) · MindTap lab 4-1 assigned", tags:["lecture"]},
+  {wk:9,  date:"2026-10-20", day:"Tue", topic:"Lecture 10: Stage 4, preprocessing, encoding, scaling, imbalance, with scikit-learn (book ch 5.4)", note:"Book chapter 5 in class (selected slides)", labs:"Graded: Programming 5-2. Practice: Application 5-1 · Project 1-2", tags:["lecture"]},
+  {wk:9,  date:"2026-10-22", day:"Thu", topic:"Lecture 11: Classical baselines, logistic regression, decision tree and k-NN in scikit-learn (book ch 3.3)", note:"Book chapter 3 in class (selected slides)", labs:"Graded: Programming 3-2. Practice: Application 3-2 · Project 4-2", tags:["lecture"]},
+  {wk:10, date:"2026-10-27", day:"Tue", topic:"Lecture 12: Evaluation, the metrics that matter for detection, with scikit-learn (book ch 4.4)", note:"Book chapter 4 in class (selected slides)", labs:"Practice: Application 4-2", tags:["lecture"]},
   {wk:10, date:"2026-10-29", day:"Thu", topic:"Lecture 13: From tabular to time-series, CIC-IDS2017, with pandas windows and a split by time", note:"Ordering, windows, leakage", tags:["lecture"]},
-  {wk:11, date:"2026-11-03", day:"Tue", topic:"Lecture 14: Sequence models, LSTMs on CIC-IDS2017 (book ch 3.4)", note:"MindTap lab 3-1, neural networks in Python, assigned", tags:["lecture"]},
-  {wk:11, date:"2026-11-05", day:"Thu", topic:"Lecture 15: Transformers and PEFT on log sequences (book ch 1.3)", note:"MindTap lab 4-2, natural language processing, assigned", tags:["lecture"]},
-  {wk:12, date:"2026-11-10", day:"Tue", topic:"Lecture 16: Reinforcement learning for response selection (book ch 5.3)", note:"MindTap lab 5-1 run in class and assigned", tags:["lecture"]},
-  {wk:12, date:"2026-11-12", day:"Thu", topic:"Lecture 17: Stage 6, inference on new data, with a saved model and the agent that runs the pipeline", note:"MindTap Project Exercise 2-1, agent design and evaluation, assigned", tags:["lecture"]},
+  {wk:11, date:"2026-11-03", day:"Tue", topic:"Lecture 14: Sequence models, LSTMs on CIC-IDS2017 (book ch 3.4)", note:"", labs:"Graded: Programming 3-1", tags:["lecture"]},
+  {wk:11, date:"2026-11-05", day:"Thu", topic:"Lecture 15: Transformers and PEFT on log sequences (book ch 1.3)", note:"", labs:"Graded: Programming 4-2", tags:["lecture"]},
+  {wk:12, date:"2026-11-10", day:"Tue", topic:"Lecture 16: Reinforcement learning for response selection (book ch 5.3)", note:"Programming 5-1 run in class", labs:"Graded: Programming 5-1", tags:["lecture"]},
+  {wk:12, date:"2026-11-12", day:"Thu", topic:"Lecture 17: Stage 6, inference on new data, with a saved model and the agent that runs the pipeline", note:"", labs:"Practice: Project 2-1 · Project 5-2 · Project 3-1 · Project 3-2 · Application 5-2", tags:["lecture"]},
   {wk:13, date:"2026-11-17", day:"Tue", topic:"Lecture 18: Stage 7, alerting, triage and false positives, with Suricata rules and Kibana alerting", note:"", tags:["lecture"]},
-  {wk:13, date:"2026-11-19", day:"Thu", topic:"Lecture 19: Stage 8, dashboards and summarizing for humans, with Kibana", note:"", tags:["lecture"]},
-  {wk:14, date:"2026-11-24", day:"Tue", topic:"Group project day", note:"Instructor not present · teams work on the capstone", tags:["gpday"]},
+  {wk:13, date:"2026-11-19", day:"Thu", topic:"Lecture 19: Stage 8, dashboards and summarizing for humans, with Kibana", note:"", labs:"Practice: Application 4-1", tags:["lecture"]},
+  {wk:14, date:"2026-11-24", day:"Tue", topic:"Group project day", note:"Instructor not present · teams work on the capstone ", tags:["gpday"]},
   {wk:14, date:"2026-11-26", day:"Thu", topic:"No class", note:"Thanksgiving holiday (Nov 25 to 27, university closed)", tags:["noclass"]},
   {wk:15, date:"2026-12-01", day:"Tue", topic:"Final capstone presentations, day 1", note:"", tags:["capstone"]},
   {wk:15, date:"2026-12-03", day:"Thu", topic:"Final capstone presentations, day 2", note:"Final capstone deliverables due", tags:["capstone"]},
@@ -627,7 +628,7 @@ function renderSchedule(state){
       + '<td class="wk">'+s.wk+'</td>'
       + '<td class="date">'+esc(dateLabel)+(isToday?'<span class="now-tag">Today</span>':"")+'</td>'
       + '<td><span class="topic">'+esc(s.topic)+'</span></td>'
-      + '<td>'+(s.note?esc(s.note)+" ":"")+badges(s.tags)+'</td>'
+      + '<td>'+(s.note?esc(s.note)+" ":"")+badges(s.tags)+(s.labs?'<div class="labs">Labs you can now do: '+esc(s.labs)+'</div>':"")+'</td>'
       + '</tr>';
   });
   body.innerHTML = html;
@@ -663,6 +664,7 @@ function renderThisWeek(state){
         + '<div class="d">'+esc(s.day)+' · '+fmtHuman(s.date)+(s.endDate?"–"+parseISO(s.endDate).getDate():"")+(isToday?" - today":"")+'</div>'
         + '<div class="t">'+esc(s.topic)+'</div>'
         + (s.note?'<div style="font-size:.85rem;color:var(--muted)">'+esc(s.note)+'</div>':"")
+        + (s.labs?'<div class="labs">Labs you can now do: '+esc(s.labs)+'</div>':"")
         + badges(s.tags)
         + '</div>';
     });
