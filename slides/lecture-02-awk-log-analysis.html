@@ -57,7 +57,7 @@ html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(
 h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
-.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body,.s-prep .s-body{justify-content:flex-start}
 .lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
@@ -244,6 +244,11 @@ ul.tree.tree-cols-2>li>ul>li{break-inside:avoid;padding-left:22px;border-left:2p
 <li>Give one question about your logs that <code>awk</code> answered faster than a tool would have.</li>
 <li>Give one question it could not answer, and say what was missing.</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">14</div></section>
+<section class="slide s-prep" data-index="15"><h1 class="s-title">Before Next Class</h1><div class="s-body"><ul>
+<li>Next session is <code>sed</code> and regular expressions on the same two files, so nothing new to install.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>The same <code>auth.log</code> and <code>conn.log</code></strong> you used today, in the same folder.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Find out which <code>sed</code> you have</strong>: run <code>sed --version</code>. If it prints a GNU version you have GNU <code>sed</code>; if it errors, you have the BSD one that ships with macOS. The two differ on <code>-i</code> and <code>-E</code>, and next session's slides give both forms.</span></li></ol>
+<div class="callout c-note"><span class="c-label">Note</span><span class="c-body">Nothing to download. If today's activity did not run, fix that before next class, because every <code>sed</code> example is built on the same two files.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">15</div></section>
 </div></div>
 <div id="hud"></div>
 <div id="notes"><h2>Speaker Notes (press N to hide)</h2><div id="notes-body"></div></div>

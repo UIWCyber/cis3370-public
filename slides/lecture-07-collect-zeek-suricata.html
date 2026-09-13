@@ -57,7 +57,7 @@ html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(
 h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
-.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body,.s-prep .s-body{justify-content:flex-start}
 .lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
@@ -287,6 +287,11 @@ ul.tree.tree-cols-2>li>ul>li{break-inside:avoid;padding-left:22px;border-left:2p
 <li>You have a uid and a flow_id. Why can you not join on them?</li>
 <li>A signature fired 2,675 times in five minutes. Give one reason that is not "we are under attack".</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">30</div></section>
+<section class="slide s-prep" data-index="31"><h1 class="s-title">Before Next Class</h1><div class="s-body"><ul>
+<li>Next session puts the bundle into a search engine. That needs a cluster on your machine, and the first start is the slowest thing in this course.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>Install Docker Desktop and start it.</strong> Administrator rights, usually a restart. Tonight, not at nine in the morning.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Pull the images before class</strong>: in the course checkout, <code>cd tools/elastic</code> then <code>docker compose pull</code>. About 2 GB, and the whole reason to do this early.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Check the memory.</strong> The stack asks for roughly 3.5 GB while up. Eight gigabytes of RAM is comfortable, four is not.</span></li></ol>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">The next two sessions need this running, not only the one that teaches it. If the pull fails, say so before class.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">31</div></section>
 </div></div>
 <div id="hud"></div>
 <div id="notes"><h2>Speaker Notes (press N to hide)</h2><div id="notes-body"></div></div>

@@ -57,7 +57,7 @@ html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(
 h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
-.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body,.s-prep .s-body{justify-content:flex-start}
 .lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
@@ -6407,6 +6407,10 @@ z
 <li>Name one thing a packet capture can answer that your network baseline cannot.</li>
 <li>Your <code>failed_logins</code> column reads NA. Is that a bug in the script, or a fact about the machine? How would you tell?</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">41</div></section>
+<section class="slide s-prep" data-index="42"><h1 class="s-title">Before Next Class</h1><div class="s-body"><ul>
+<li>Next session replaces your two hand-written collectors with Zeek and Suricata. You will not install them. You will read five minutes of their real output.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>The course log bundle, from Canvas.</strong> About 3.5 MB. Download and unzip it before class into a folder you can find.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>Check it unzipped properly</strong>: you should see <code>zeek_tsv/</code>, <code>zeek_json/</code>, <code>suricata/eve.json</code> and <code>MANIFEST.md</code>. Open <code>MANIFEST.md</code> and note the capture window; the arithmetic in two later sessions depends on it.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Keep your three files from today</strong>, <code>host-baseline.tsv</code>, <code>net-baseline.tsv</code> and <code>capture.pcap</code>. Next session compares what you measured by hand against what a real sensor writes by default.</span></li></ol></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">42</div></section>
 </div></div>
 <div id="hud"></div>
 <div id="notes"><h2>Speaker Notes (press N to hide)</h2><div id="notes-body"></div></div>

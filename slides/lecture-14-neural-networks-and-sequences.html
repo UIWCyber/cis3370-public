@@ -57,7 +57,7 @@ html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(
 h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
-.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body,.s-prep .s-body{justify-content:flex-start}
 .lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
@@ -10769,6 +10769,11 @@ z
 <li>Your bigger network scored lower on test and the same on training. What happened, in one sentence?</li>
 <li>Windows of eight rows made your model worse on this file. Name the measurement from Lecture 4 that predicted it.</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">35</div></section>
+<section class="slide s-prep" data-index="36"><h1 class="s-title">Before Next Class</h1><div class="s-body"><ul>
+<li>Next session asks whether a language model reading raw log text earns its place. That means having a model on your machine that actually runs on your machine.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>A small pretrained model you can run locally.</strong> Choose one you can actually load: an embedding model through <code>sentence-transformers</code> is the lightest route, and a small model served by Ollama is the other. Download the weights before class.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>The HTTP log lines from the course bundle</strong>, which is where next session's text comes from.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Your CIC-IDS2017 files from session 13</strong>, and the 0.817 from today. That score is the number a language model has to beat.</span></li></ol>
+<div class="callout c-warn"><span class="c-label">Watch out</span><span class="c-body">If your machine cannot run any local model, say so before class rather than during it. You will be paired.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">36</div></section>
 </div></div>
 <div id="hud"></div>
 <div id="notes"><h2>Speaker Notes (press N to hide)</h2><div id="notes-body"></div></div>

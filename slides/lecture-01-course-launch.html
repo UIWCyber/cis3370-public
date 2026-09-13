@@ -57,7 +57,7 @@ html,body{margin:0;height:100%;background:#111;color:var(--ink);font-family:var(
 h1.s-title{font-size:34px;margin:0 0 18px;font-weight:800;color:#fff;border-bottom:3px solid var(--red);padding-bottom:12px}
 .vis-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .s-body{flex:1;font-size:24px;line-height:1.4;overflow:hidden;display:flex;flex-direction:column;gap:10px;justify-content:center}
-.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body{justify-content:flex-start}
+.s-content .s-body,.s-steps .s-body,.s-demo .s-body,.s-activity .s-body,.s-prep .s-body{justify-content:flex-start}
 .lead{color:var(--muted);font-size:22px;margin:0 0 6px}
 ul,ol{margin:4px 0;padding-left:30px}
 li{margin:8px 0}
@@ -294,6 +294,11 @@ ul.tree.tree-cols-2>li>ul>li{break-inside:avoid;padding-left:22px;border-left:2p
 <li>Name the pipeline stage you understand least right now.</li>
 <li>Name one dataset field you would want that a raw log does not give you.</li>
 </ul></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">17</div></section>
+<section class="slide s-prep" data-index="18"><h1 class="s-title">Before Next Class</h1><div class="s-body"><ul>
+<li>Next session turns a log file into answers with <code>awk</code>. Bring a file to point it at.</li>
+</ul>
+<ol class="steps"><li><span class="step-n">1</span><span class="step-t"><strong>One log file of your own.</strong> Anything line-based your machine already writes. On macOS or Linux try <code>/var/log/system.log</code> or <code>journalctl</code>; on Windows export a few hundred rows of the Security log to text.</span></li><li><span class="step-n">2</span><span class="step-t"><strong>If you have none, get the course log bundle from Canvas now.</strong> It is about 3.5 MB and holds real Zeek and Suricata output, including the <code>conn.log</code> the next three sessions use as their second example. You need it from session 7 onward regardless, so downloading it tonight costs nothing.</span></li><li><span class="step-n">3</span><span class="step-t"><strong>Confirm the three tools run</strong>: <code>awk --version</code>, <code>sed --version</code> and <code>python3 --version</code>. If any one of them is missing, say so at the start of next class rather than halfway through.</span></li></ol>
+<div class="callout c-tip"><span class="c-label">Tip</span><span class="c-body">Keep the file and the bundle in one folder and work there all term.</span></div></div><div class="s-foot"><span>CIS 3370 Intrusion Detection Systems</span><span></span></div><div class="s-num">18</div></section>
 </div></div>
 <div id="hud"></div>
 <div id="notes"><h2>Speaker Notes (press N to hide)</h2><div id="notes-body"></div></div>
