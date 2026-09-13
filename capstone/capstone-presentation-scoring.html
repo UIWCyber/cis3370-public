@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Capstone Presentation Rubric - CIS 3370</title>
+<title>Capstone Presentation Scoring - CIS 3370</title>
 <style>
   :root {
     --cardinal: #CB333B; --cardinal-dark: #9e262d; --link: #2E8FD6;
@@ -39,11 +39,16 @@
   .crit .head { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
   .crit .head h3 { margin: 0; flex: 1 1 auto; }
   .crit .weight { background: var(--cardinal); color: #fff; border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.8rem; font-weight: 700; }
+  .crit .scorebox { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; }
+  .crit .scorebox input { width: 5rem; text-align: right; }
+  .crit .scorebox .max { color: var(--muted); font-weight: 600; }
   .descriptors { margin-top: 0.7rem; display: grid; gap: 0.5rem; }
   .desc-row { display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.6rem; font-size: 0.9rem; }
   .desc-row .lvl { font-weight: 700; }
   .lvl.exc { color: #1f8a4c; } .lvl.adq { color: #b8860b; } .lvl.miss { color: var(--cardinal); }
   @media (prefers-color-scheme: dark) { .lvl.exc { color: #4ecb7d; } .lvl.adq { color: #e0b64a; } }
+  .totalbar { position: sticky; top: 3.1rem; z-index: 40; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1rem; margin: 1rem 0; font-weight: 800; font-size: 1.15rem; display: flex; align-items: center; justify-content: space-between; }
+  .totalbar .val { color: var(--cardinal); font-size: 1.4rem; }
   .btn { background: var(--cardinal); color: #fff; border: none; border-radius: 5px; padding: 0.5rem 0.9rem; font: inherit; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
   .btn:hover { background: var(--cardinal-dark); }
   .btn.secondary { background: transparent; color: var(--fg); border: 1px solid var(--input-border); }
@@ -51,13 +56,16 @@
   .toolbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; background: var(--panel); border-bottom: 1px solid var(--border); padding: 0.6rem 1.25rem; box-shadow: 0 2px 6px var(--shadow); }
   .toolbar .title { font-weight: 700; color: var(--cardinal); margin-right: auto; font-size: 0.95rem; }
   .deduct { background: var(--panel); border: 1px solid var(--cardinal); border-radius: 6px; padding: 0.7rem 0.9rem; margin: 1rem 0; font-size: 0.92rem; }
-  ol.beats, ul.tips { font-size: 0.93rem; }
+  label.inline { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; }
+  input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--cardinal); }
+  ol.beats { font-size: 0.93rem; }
   @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } .wrap { padding: 1rem 0.8rem 4rem; } .desc-row { grid-template-columns: 1fr; gap: 0.15rem; } }
   @media print {
     .toolbar, .no-print, button { display: none !important; }
     body { font-size: 11pt; background: #fff; color: #000; }
     .wrap { max-width: 100%; padding: 0; }
     :root { --bg:#fff; --fg:#000; --panel:#fff; --panel-2:#f0f0f0; --border:#999; --input-border:#999; }
+    .totalbar { position: static; }
     .crit { page-break-inside: avoid; }
     input, textarea { border: 1px solid #999 !important; }
     @page { size: letter; margin: 0.6in; }
@@ -65,47 +73,39 @@
 </style>
 </head>
 <body>
-<div class="toolbar no-print">
-  <span class="title">Capstone Presentation Rubric</span>
-  <button class="btn" id="btnPrint">Download PDF</button>
-  <button class="btn secondary" id="btnTheme">Toggle Theme</button>
-  <button class="btn secondary" id="btnClear">Clear Form</button>
-</div>
 <div class="wrap">
   <header class="doc">
-    <h1>Capstone Presentation Rubric</h1>
+    <h1>Capstone Presentation Scoring</h1>
     <div class="sub">CIS 3370 Intrusion Detection Systems &nbsp;|&nbsp; Instructor: Dr. Gonzalo D Parra</div>
   </header>
 
   <div class="callout">
-    The final presentation is worth 7% of your course grade (part of the 45% capstone). Teams present in posted time slots; the order is posted on Canvas. Each team gets 10 to 15 minutes plus Q&amp;A. Every member presents the user stories they contributed to.
+    Instructor sheet, filled during the presentation. It scores the presentation only. Scores are kept in this browser, so this page can be reopened later and the total carried to the Capstone Grading Rubric, where the presentation is worth 7 points of the course grade.
   </div>
 
-  <h2>Hard Rules</h2>
-  <ul style="font-size:0.93rem;">
-    <li><strong>Every member presents.</strong> Delivery credit requires each member to present the user stories they contributed to.</li>
-    <li><strong>Missing your slot costs 15%.</strong> A missed scheduled presentation slot is an automatic 15% deduction from the team's total capstone grade.</li>
-    <li><strong>No late final work.</strong> The final wiki, repo, board, and presentation are not accepted late.</li>
-    <li><strong>Recorded run required.</strong> A recording of your pipeline running from a clean checkout must be in the repo. If the live run fails, switch to the recording and keep going; a working artifact is not penalized heavily for a failed cable.</li>
-  </ul>
+  <h2>Team Under Review</h2>
+  <div class="grid-2">
+    <div class="field"><label for="team-name">Team name</label><input type="text" id="team-name" placeholder="Team name"></div>
+    <div class="field"><label for="presenters">Presenters</label><input type="text" id="presenters" placeholder="Member names, in speaking order"></div>
+  </div>
+  <div class="grid-2">
+    <div class="field"><label for="slot">Slot</label><input type="text" id="slot" placeholder="Day and time"></div>
+    <div class="field"><label for="runtime">Run time</label><input type="text" id="runtime" placeholder="Minutes, start to finish"></div>
+  </div>
 
-  <h2>Required Structure (the Reproduction)</h2>
-  <ol class="beats">
-    <li><strong>The paper and its claim in one sentence:</strong> what number, on what data, under what split, and the table it comes from.</li>
-    <li><strong>The data:</strong> which dataset and version, how you obtained it, how many rows, and what you had to drop or repair.</li>
-    <li><strong>The pipeline you rebuilt:</strong> the stages end to end, and the baseline you scored before the paper's method.</li>
-    <li><strong>Your result beside the paper's:</strong> one comparison table, with every choice the paper did not state that you had to make.</li>
-    <li><strong>What would settle the gap:</strong> the experiment you did not have time to run, and what you expect it would show.</li>
-    <li><strong>Who did what:</strong> the contribution table from your README, on a slide.</li>
-  </ol>
+  <h2>Scoring</h2>
+  <p class="note">Enter a score from 0 to each criterion's maximum. The weighted total out of 100 computes as you type. Descriptors are the same ones the students see on their own rubric.</p>
 
-  <h2>Criteria Preview (matches the grading sheet)</h2>
-  <p class="note">These are the same criteria and weights the instructor uses on the grading rubric. The presentation is scored out of 100 and converts to the 7% component.</p>
+  <div class="totalbar">
+    <span>Presentation total</span>
+    <span><span class="val" id="totalVal">0</span> / 100</span>
+  </div>
 
-  <div class="crit" data-crit="repro">
+  <div class="crit" data-crit="repro" data-max="40">
     <div class="head">
       <h3>Live reproduction</h3>
       <span class="weight">40%</span>
+      <span class="scorebox">Score <input type="number" id="score-repro" min="0" max="40" step="0.5" placeholder="0"> <span class="max">/ 40</span></span>
     </div>
     <div class="descriptors">
       <div class="desc-row"><span class="lvl exc">Excellent</span><span>The repository runs from a clean checkout in front of the room and reproduces at least one number from the comparison table, live. The team drives it confidently and knows what each step is doing.</span></div>
@@ -114,10 +114,11 @@
     </div>
   </div>
 
-  <div class="crit" data-crit="honest">
+  <div class="crit" data-crit="honest" data-max="30">
     <div class="head">
       <h3>The reproduction, told honestly</h3>
       <span class="weight">30%</span>
+      <span class="scorebox">Score <input type="number" id="score-honest" min="0" max="30" step="0.5" placeholder="0"> <span class="max">/ 30</span></span>
     </div>
     <div class="descriptors">
       <div class="desc-row"><span class="lvl exc">Excellent</span><span>The claim, the data, the pipeline and the comparison table are all clear, and the team names every choice the paper left unstated and what it did about each. A listener could go and repeat the work.</span></div>
@@ -126,10 +127,11 @@
     </div>
   </div>
 
-  <div class="crit" data-crit="delivery">
+  <div class="crit" data-crit="delivery" data-max="30">
     <div class="head">
       <h3>Professionalism and Q&amp;A</h3>
       <span class="weight">30%</span>
+      <span class="scorebox">Score <input type="number" id="score-delivery" min="0" max="30" step="0.5" placeholder="0"> <span class="max">/ 30</span></span>
     </div>
     <div class="descriptors">
       <div class="desc-row"><span class="lvl exc">Excellent</span><span>Practiced and in time (10 to 15 minutes), every member speaks to their user stories, and the team shows mastery answering questions.</span></div>
@@ -139,32 +141,46 @@
   </div>
 
   <div class="deduct">
-    <strong>Missed slot deduction:</strong> failing to present in your scheduled slot is an automatic 15% deduction from the team's total capstone grade.
+    <strong>Missed slot deduction:</strong> failing to present in the scheduled slot is an automatic 15% deduction from the team's total capstone grade. Record it here and apply it on the grading rubric, not in the scores above.
   </div>
 
-  <h2>Tips</h2>
-  <ul class="tips">
-    <li><strong>Lead with the comparison table.</strong> The paper's number beside yours, on the second slide. Everything after it is explanation.</li>
-    <li><strong>Run it from a clean checkout.</strong> Clone into an empty directory in front of the room and let it produce one number. That is the whole demo.</li>
-    <li><strong>A gap is a result, not a failure.</strong> "We got 0.81 where the paper reports 0.94, and here are the three choices it did not state" is the strongest thing you can say. Rank the explanations, and check your own work before blaming theirs.</li>
-    <li><strong>Rehearse handoffs and timing.</strong> Practice the full run so every member's part is smooth and you land inside 10 to 15 minutes.</li>
-    <li><strong>Have the recording ready.</strong> If the live run fails, switch to the recorded one and keep going.</li>
-  </ul>
-
-  <h2>Self-Check Before You Present</h2>
-  <div class="grid-2">
-    <div class="field"><label for="team-name">Team name</label><input type="text" id="team-name" placeholder="Team name"></div>
-    <div class="field"><label for="presenters">Presenters (every member speaking)</label><input type="text" id="presenters" placeholder="Member names"></div>
-  </div>
-  <div class="field"><label for="demo-plan">Live run plan (the number you will reproduce in front of the room)</label><textarea id="demo-plan" placeholder="The command you will run and the number it will print"></textarea></div>
-  <div class="field"><label for="fallback-link">Recorded run location</label><input type="text" id="fallback-link" placeholder="where the recording of the clean-checkout run lives in the repo"></div>
-  <div class="field"><label for="timing">Rehearsed run time (target 10 to 15 minutes)</label><input type="text" id="timing" placeholder="e.g., 12 minutes in the last dry-run"></div>
+  <h2>Notes to Carry Forward</h2>
+  <div class="field"><label for="notes">What to remember when grading the rest of the deliverables</label><textarea id="notes" placeholder="Claims to check against the repository, questions the team could not answer, anything promised in the room"></textarea></div>
+  <div class="field"><label for="carried">Carried to the grading rubric</label><input type="text" id="carried" placeholder="Total out of 100, converted to 7 points"></div>
 </div>
 
 <script>
 (function () {
   "use strict";
-  var NS = "cis3370-presentation-rubric:";
+  var NS = "cis3370-presentation-scoring:";
+
+  // Criteria are read from the page, not listed here, so this script serves any course's
+  // criteria set without being edited: each .crit carries data-max, and the score input
+  // inside it is the one that counts toward the total.
+  var crits = [].slice.call(document.querySelectorAll(".crit[data-max]"));
+  var scores = crits.map(function (c) {
+    var el = c.querySelector("input[type=number]");
+    return el ? { el: el, max: parseFloat(c.getAttribute("data-max")) } : null;
+  }).filter(Boolean);
+  var scoreIds = scores.map(function (s) { return s.el.id; });
+
+  function clampScore(el) {
+    var s = scores.filter(function (x) { return x.el === el; })[0];
+    if (!s) return;
+    var v = parseFloat(el.value);
+    if (isNaN(v)) return;
+    if (v < 0) el.value = 0;
+    else if (v > s.max) el.value = s.max;
+  }
+  function updateTotal() {
+    var total = 0;
+    scores.forEach(function (s) {
+      var v = parseFloat(s.el.value);
+      if (!isNaN(v)) total += v;
+    });
+    total = Math.round(total * 10) / 10;
+    document.getElementById("totalVal").textContent = total;
+  }
 
   function saveEl(el) {
     if (!el.id) return;
@@ -184,13 +200,18 @@
     });
   }
   restoreAll();
+  updateTotal();
 
-  document.addEventListener("input", function (e) { saveEl(e.target); });
-  document.addEventListener("change", function (e) { saveEl(e.target); });
+  function onEdit(e) {
+    if (scoreIds.indexOf(e.target.id) !== -1) { clampScore(e.target); updateTotal(); }
+    saveEl(e.target);
+  }
+  document.addEventListener("input", onEdit);
+  document.addEventListener("change", onEdit);
 
   document.getElementById("btnPrint").addEventListener("click", function () { window.print(); });
   document.getElementById("btnClear").addEventListener("click", function () {
-    if (!confirm("Clear this form and erase its saved data on this device? This cannot be undone.")) return;
+    if (!confirm("Clear this sheet and erase its saved scores on this device? This cannot be undone.")) return;
     var keys = [];
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);

@@ -89,10 +89,13 @@
 
   <div class="callout">
     One rubric for the whole capstone (45% of the course grade), one section per graded component:
-    Proposal 2%, Reproduction 15%, Final Presentation 10%, Repository and Board 8%, Wiki Report 10%.
+    Paper Selection and Proposal 1%, Reproduction 15%, GitHub Repository 9%, Project Board 8%,
+    GitHub Wiki Reproduction Report 5%, Final Presentation 7%.
     Within each section, criteria weights add to 100%. Pick a level for every criterion; the form
     converts each section score to its course points and totals everything automatically. Levels award
     0%, 10%, 30%, 60%, 80%, or 100% of a criterion's weight (so a 30% criterion offers 0 / 3 / 9 / 18 / 24 / 30).
+    The Final Presentation section is the one you do not fill in live: score it on the Capstone
+    Presentation Scoring sheet during the presentation, then carry its total here.
   </div>
 
   <div class="grid-2">
@@ -150,7 +153,7 @@
   ];
 
   var SECTIONS = [
-    { id: "prop", title: "1. Paper Selection and Proposal", pts: 2, criteria: [
+    { id: "prop", title: "1. Paper Selection and Proposal", pts: 1, criteria: [
       ["Paper and claim", "The paper is named with venue and year, published in the last three years in a high h5-index venue, and the exact claim to be reproduced is stated as a number or a table rather than as a topic.", 40],
       ["Feasibility evidence", "The team shows the data is already obtainable and loading, and that the method is described in enough detail to rebuild.", 30],
       ["Team and logistics", "Roster complete, shared weekly working hours agreed, GitHub set up (repo, board, wiki, collaborators), and a recorded unanimous commit-approach vote.", 20],
@@ -162,21 +165,28 @@
       ["Comparison to published results", "The team's numbers are placed beside the paper's and the gap is quantified, not described.", 25],
       ["Reproducibility hygiene", "Seeds, library versions and data splits are fixed and recorded, so the result can be repeated by someone else.", 10]
     ]},
-    { id: "pres", title: "3. Final Presentation", pts: 10, criteria: [
-      ["The comparison", "Leads with the claim and the measured result, so the audience learns what matched and what did not.", 40],
-      ["Method walkthrough", "A clear account of the pipeline actually built and the decisions that shaped it.", 30],
-      ["Professionalism and Q&A", "Practiced and in time, every member speaks, and the team can answer questions about its own numbers.", 30]
+    { id: "repo", title: "3. GitHub Repository", pts: 9, criteria: [
+      ["Runs from a clean checkout", "Someone outside the team can clone the repository, follow the README, and reproduce the reported numbers.", 35],
+      ["Commits stand behind the board", "Every completed board item has commits behind it, and the history shows the work happening across the semester rather than in the final fortnight.", 30],
+      ["Contribution is visible", "Commits show who did what, consistent with the declared commit approach. The Individual Contribution Summary Table is required at the bottom of the README: a missing table cannot score above Missing on this criterion.", 25],
+      ["Evidence stored where it is cited", "Figures, logs and configuration exports live in the repository at the paths the wiki and the README point to.", 10]
     ]},
-    { id: "repo", title: "4. GitHub Repository and Project Board", pts: 8, criteria: [
-      ["Runs from a clean checkout", "Someone outside the team can clone the repository, follow the README, and reproduce the reported numbers.", 40],
-      ["Contribution is visible", "Commits show who did what, consistent with the declared commit approach. The Individual Contribution Summary Table is required at the bottom of the README: a missing table cannot score above Missing on this criterion.", 30],
-      ["Board reflects the real history", "Issues, sub-tasks and iterations track the semester as it actually happened rather than being filled in at the end.", 30]
+    { id: "board", title: "4. Project Board", pts: 8, criteria: [
+      ["User stories with story points", "Work is written as user stories and sized with story points before it starts. These are the points the Individual Contribution Summary Table reports, and the points that set each member's individual grade.", 35],
+      ["Planned across the semester", "Milestones and iterations show work moving through the board week by week. A board filled in near the deadline scores Missing however complete it looks on the day.", 35],
+      ["Assigned, current and complete", "Every item carries an assignee, a milestone and an iteration, and its status matches reality at grading time. Nothing substantial happened off the board.", 20],
+      ["Coordination is visible", "Issues carry the conversation: blockers raised, work handed over, decisions recorded where the team can find them again.", 10]
     ]},
-    { id: "wiki", title: "5. GitHub Wiki Reproduction Report", pts: 10, criteria: [
+    { id: "wiki", title: "5. GitHub Wiki Reproduction Report", pts: 5, criteria: [
       ["Claim and result", "The reproduced claim is quoted precisely, and the team's result sits beside it in a table.", 35],
       ["Method and deviations", "Enough detail for a reader to repeat the work, with every deviation from the paper named.", 35],
       ["Explanation of the gap", "A reasoned account of why the results diverge and what would be needed to close the gap. A documented negative result earns full marks on this criterion.", 20],
       ["Structure and navigation", "Sidebar, logical sections, clean headings and working links.", 10]
+    ]},
+    { id: "pres", title: "6. Final Presentation", pts: 7, criteria: [
+      ["Live reproduction", "The repository runs from a clean checkout in front of the room and reproduces at least one number from the comparison table.", 40],
+      ["The reproduction, told honestly", "Claim, data, pipeline and comparison are clear, and every choice the paper left unstated is named.", 30],
+      ["Professionalism and Q&A", "Practiced and in time, every member speaks to their user stories, and the team answers questions about its own numbers.", 30]
     ]}
   ];
 
