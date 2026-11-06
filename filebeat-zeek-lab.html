@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ship Logs with Filebeat: a File, a Module, and Zeek - CIS 3370</title>
+<style>
+:root{--red:#CB333B;--red-dark:#A32830;--bg:#f7f7f9;--surface:#fff;--surface-2:#f1f1f4;
+ --text:#1c1e22;--muted:#5b616b;--line:#e2e3e8;--amb:#8a5a00;--amb-bg:#fdf6e7;--ok:#1a7f4e;
+ --shadow:0 1px 3px rgba(20,22,26,.07),0 8px 24px rgba(20,22,26,.06)}
+:root[data-theme="dark"]{--bg:#16181c;--surface:#1f2228;--surface-2:#262a31;--text:#f2f3f5;
+ --muted:#a8aeb8;--line:#333842;--amb:#f0c476;--amb-bg:#2a2313;--ok:#6ee7a8;--red:#e8626c;--red-dark:#cb333b}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181c;--surface:#1f2228;
+ --surface-2:#262a31;--text:#f2f3f5;--muted:#a8aeb8;--line:#333842;--amb:#f0c476;--amb-bg:#2a2313;
+ --ok:#6ee7a8;--red:#e8626c;--red-dark:#cb333b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+ font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 1.2rem}
+header.hero{background:var(--red);color:#fff;padding:2.2rem 0 1.8rem}
+header.hero h1{margin:.2rem 0 .4rem;font-size:2rem;line-height:1.15}
+header.hero p{margin:0;max-width:70ch;opacity:.95}
+.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;font-weight:700;opacity:.9;margin:0}
+.flow{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
+.flow span{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+ padding:.3rem .7rem;border-radius:999px;font-size:.85rem;font-weight:600}
+main{padding:1.6rem 0 3rem}
+h2{font-size:1.3rem;margin:0 0 .8rem;line-height:1.25}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+ padding:1.1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:1.2rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.new{color:var(--red);font-weight:600}
+.grid3{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:1.2rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--red);
+ border-radius:10px;padding:.8rem 1rem;box-shadow:var(--shadow)}
+.stat .k{font-size:1.6rem;font-weight:800;line-height:1.1}
+.stat .l{color:var(--muted);font-size:.86rem;margin-top:.2rem}
+section.issue{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+ padding:1.1rem 1.25rem;box-shadow:var(--shadow);margin-bottom:1.1rem}
+section.issue h2{display:flex;align-items:center;gap:.6rem}
+.num{display:inline-flex;align-items:center;justify-content:center;min-width:1.9rem;height:1.9rem;
+ border-radius:8px;background:var(--red);color:#fff;font-size:.95rem;font-weight:800;flex:0 0 auto}
+.steps{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.step{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:.7rem .85rem}
+.step h3{margin:0 0 .35rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.step p{margin:0;font-size:.93rem}
+.step.issue-b{background:var(--amb-bg);border-color:var(--amb)}
+.step.issue-b h3{color:var(--amb)}
+.step.sol{border-left:5px solid var(--ok)}
+code{background:var(--surface-2);border:1px solid var(--line);border-radius:5px;
+ padding:.05rem .3rem;font-size:.88em}
+.note{color:var(--muted);font-size:.9rem}
+.theme-fab{position:fixed;right:1rem;bottom:1rem;background:var(--surface);color:var(--text);
+ border:1px solid var(--line);border-radius:999px;padding:.5rem .9rem;cursor:pointer;
+ box-shadow:var(--shadow);font-size:.85rem;font-weight:600}
+@media print{
+ :root{--bg:#fff;--surface:#fff;--surface-2:#f4f4f6;--text:#111;--line:#bbb}
+ .theme-fab{display:none}header.hero{background:#fff;color:#111;border-bottom:3px solid var(--red)}
+ section.issue,.panel,.stat{break-inside:avoid;box-shadow:none}
+ body{font-size:11pt}
+}
+
+figure{margin:1rem 0;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:.6rem}
+figure img{width:100%;height:auto;border-radius:6px;border:1px solid var(--line);display:block}
+figcaption{color:var(--muted);font-size:.86rem;margin-top:.5rem}
+pre{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:.75rem .9rem;
+ overflow-x:auto;font-size:.84rem;line-height:1.45}
+ol.steps-list{padding-left:1.2rem}
+ol.steps-list li{margin-bottom:.5rem}
+.q{background:var(--surface-2);border-left:5px solid var(--red);border-radius:8px;
+ padding:.7rem .9rem;margin-bottom:.7rem}
+.q .lab{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:800}
+.q p{margin:.3rem 0 0}
+.warnbox{background:var(--amb-bg);border:1px solid var(--amb);border-radius:10px;padding:.8rem 1rem;margin:.9rem 0}
+.warnbox strong{color:var(--amb)}
+@media print{
+ section.issue{break-inside:auto}
+ figure{break-inside:avoid;margin:.5rem 0}
+ figure img{max-height:8in;width:auto;max-width:100%;margin:0 auto}
+ pre{white-space:pre-wrap}
+ table{break-inside:auto}tr{break-inside:avoid}
+ h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">CIS 3370 &middot; Intrusion Detection Systems &middot; Lab</p>
+    <h1>Ship logs with Filebeat: a file, a module, and Zeek</h1>
+    <p>Elasticsearch only knows what something sends it. In this lab you install the sender,
+    Filebeat, on two lab machines and point it at three kinds of evidence: a plain file, the
+    system logs of a Linux machine, and the connection records Zeek writes about a network. Each one
+    goes in twice, once as raw lines and once through a module, so you can see exactly what a
+    module adds. Filebeat logs in as a user that can write and do nothing else. Every number on this
+    page was produced by running these steps on the class stack.</p>
+    <div class="flow"><span>1. Look at the cluster</span><span>2. Install Filebeat</span><span>3. A user that can only write</span><span>4. A file as a stream</span><span>5. The system module</span><span>6. Zeek, stream and module</span><span>7. Zeek, live</span></div>
+  </div>
+</header>
+<main class="wrap">
+
+<section class="issue">
+<h2><span class="num">0</span>Before you start</h2>
+<p>You need the class docker-elk stack running, with its five services: <code>elasticsearch</code>,
+<code>logstash</code>, <code>kibana</code>, <code>client-01</code> and <code>zeek-lab</code>. The compose
+file is in Appendix A. If <code>docker compose ps</code> in your <code>docker-elk</code> folder does not
+list all five as running, build the stack first.</p>
+<p>You also need <code>cis3370-generate-bundle.zip</code> from Canvas. It holds the capture and the
+baselines from Lecture 6, made on our own lab machine. Put a copy in each lab machine's data folder.
+On a Mac or Linux:</p>
+<pre>cp ~/Downloads/cis3370-generate-bundle.zip ~/docker-elk/client-01/data/
+cp ~/Downloads/cis3370-generate-bundle.zip ~/docker-elk/zeek-lab/data/</pre>
+<p>On Windows, in PowerShell:</p>
+<pre>$zip = "$HOME\Downloads\cis3370-generate-bundle.zip"
+Copy-Item $zip $HOME\docker-elk\client-01\data\
+Copy-Item $zip $HOME\docker-elk\zeek-lab\data\</pre>
+<p>Open two terminals, both in your <code>docker-elk</code> folder. One will be inside
+<code>client-01</code> and the other inside <code>zeek-lab</code>. Inside a container you are root, the
+prompt starts in <code>/home/ubuntu</code>, and <code>/home/ubuntu/data</code> is the folder on your
+computer.</p>
+<table>
+<tr><th>Account</th><th>Password</th><th>Used for</th></tr>
+<tr><td><code>elastic</code></td><td><code>changeme</code></td><td>Setup only: creating the user, the templates and the pipelines, and checking results</td></tr>
+<tr><td><code>beats</code></td><td><code>cis3370-beats</code></td><td>Filebeat, every time it sends data</td></tr>
+</table>
+<p class="note">Both passwords are development passwords for a stack on your own laptop. Never use
+them on anything another machine can reach.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">1</span>Look at the cluster</h2>
+<p>Before you change anything, ask Docker what is running, which ports each container publishes,
+and which folders each one mounts. From your <code>docker-elk</code> folder on your computer:</p>
+<pre>docker compose ps --format "table {{.Name}}\t{{.Ports}}"
+docker compose ps --format "table {{.Name}}\t{{.Mounts}}" --no-trunc</pre>
+<p>The field is <code>.Name</code>. If you type <code>.Names</code>, which is the field name for
+<code>docker ps</code>, every name prints as <code>&lt;no value&gt;</code>. This is what the class stack
+printed, with the home folder shortened to <code>you</code>:</p>
+<pre>NAME                         PORTS
+docker-elk-client-01-1
+docker-elk-elasticsearch-1   0.0.0.0:9200-&gt;9200/tcp, [::]:9200-&gt;9200/tcp, 0.0.0.0:9300-&gt;9300/tcp, [::]:9300-&gt;9300/tcp
+docker-elk-kibana-1          0.0.0.0:5601-&gt;5601/tcp, [::]:5601-&gt;5601/tcp
+docker-elk-logstash-1        0.0.0.0:5044-&gt;5044/tcp, [::]:5044-&gt;5044/tcp, 0.0.0.0:9600-&gt;9600/tcp, ...
+docker-elk-zeek-lab-1
+
+NAME                         &lt;no value&gt;
+docker-elk-client-01-1       /host_mnt/Users/you/docker-elk/client-01/data
+docker-elk-elasticsearch-1   /host_mnt/Users/you/docker-elk/elasticsearch/config/elasticsearch.yml,docker-elk_elasticsearch
+docker-elk-kibana-1          /host_mnt/Users/you/docker-elk/kibana/config/kibana.yml
+docker-elk-logstash-1        /host_mnt/Users/you/docker-elk/logstash/config/logstash.yml,/host_mnt/Users/you/docker-elk/logstash/pipeline
+docker-elk-zeek-lab-1        /host_mnt/Users/you/docker-elk/zeek-lab/data</pre>
+<p>Read it row by row:</p>
+<ul>
+<li><strong>The two lab machines publish no ports.</strong> Nothing on your laptop or your network can
+reach them. They reach the stack, and each other, over the Docker network by name.</li>
+<li><strong>Elasticsearch is on 9200 and Kibana on 5601.</strong> Those are the two you use from your
+browser and from <code>curl</code> on your computer.</li>
+<li><strong>The Mounts column has no heading of its own,</strong> so Compose prints
+<code>&lt;no value&gt;</code> in the header row. The rows are correct.</li>
+<li><strong>Each lab machine mounts one folder,</strong> its <code>data</code> folder. A file you put
+there from your computer appears at <code>/home/ubuntu/data</code> inside it. Elasticsearch keeps its
+documents in a named volume, <code>docker-elk_elasticsearch</code>, which is what
+<code>docker compose down -v</code> deletes.</li>
+</ul>
+</section>
+
+<section class="issue">
+<h2><span class="num">2</span>Install Filebeat on client-01</h2>
+<p>This follows Elastic's page <em>Filebeat quick start: installation and configuration</em>, step 1,
+the DEB tab. Two things are different here. First, the version is pinned to <strong>9.5.3</strong>, the
+version the cluster runs, because Filebeat should never be newer than Elasticsearch. Second, the
+download picks your processor type for you. That is <code>arm64</code> on an Apple silicon Mac and
+<code>amd64</code> on most Windows and Intel machines.</p>
+<pre>docker compose exec client-01 bash</pre>
+<p>Then, inside <code>client-01</code>:</p>
+<pre>apt-get update
+apt-get install -y curl unzip nano
+cd /tmp
+ARCH=$(dpkg --print-architecture)
+URL=https://artifacts.elastic.co/downloads/beats/filebeat
+curl -L -O $URL/filebeat-9.5.3-${ARCH}.deb
+dpkg -i filebeat-9.5.3-${ARCH}.deb
+filebeat version</pre>
+<p>Expected output, with your own processor type in the brackets:</p>
+<pre>filebeat version 9.5.3 (arm64), libbeat 9.5.3 [...]</pre>
+<p>The package puts its files in four places, and you will use all of them:</p>
+<table>
+<tr><th>Path</th><th>What is there</th></tr>
+<tr><td><code>/etc/filebeat/filebeat.yml</code></td><td>The main configuration: what to read and where to send it</td></tr>
+<tr><td><code>/etc/filebeat/modules.d/</code></td><td>One file per module. A file ending in <code>.disabled</code> is switched off.</td></tr>
+<tr><td><code>/var/lib/filebeat/registry</code></td><td>The registry: how far into each file Filebeat has already read</td></tr>
+<tr><td><code>/var/log/filebeat/</code></td><td>Filebeat's own logs, including the record of any event it could not deliver</td></tr>
+</table>
+<div class="warnbox">
+<p><strong>The Elastic page says <code>systemctl start filebeat</code>. That does not work here.</strong>
+A container runs one program, not a full operating system, so it has no <code>systemd</code> to start
+services for you. In this lab you start Filebeat yourself with <code>nohup filebeat -e</code> and stop it with
+<code>pkill filebeat</code>.</p>
+</div>
+</section>
+
+<section class="issue">
+<h2><span class="num">3</span>A user that can only write</h2>
+<p>Filebeat has two jobs, and they need very different rights.</p>
+<ul>
+<li><strong>Setup</strong> happens once. It creates the index template that says what type each
+field is, the lifecycle policy that says when old data rolls over, and the ingest pipelines that
+parse each module's lines. Setup needs administrator rights.</li>
+<li><strong>Publishing</strong> happens all day, on every machine that ships logs. It only adds
+documents.</li>
+</ul>
+<p>A shipper runs on the machine you are watching. If that machine is broken into, the attacker gets
+the shipper's password from its configuration file. So the publishing account should be able to add
+documents to its own data and do nothing else: not read, not delete, not create users. Setup is done
+once by the <code>elastic</code> superuser, and the password Filebeat keeps belongs to a user that
+cannot undo anything.</p>
+<table>
+<tr><th>Privilege</th><th>Where</th><th>Why Filebeat needs it</th></tr>
+<tr><td><code>monitor</code></td><td>cluster</td><td>Check the Elasticsearch version and license when it connects</td></tr>
+<tr><td><code>read_ilm</code></td><td>cluster</td><td>Check that the lifecycle policy exists</td></tr>
+<tr><td><code>read_pipeline</code></td><td>cluster</td><td>Check that a module's ingest pipeline exists before sending data through it</td></tr>
+<tr><td><code>create_doc</code></td><td><code>filebeat-*</code></td><td>Add new documents. It cannot change or delete existing ones.</td></tr>
+<tr><td><code>auto_configure</code></td><td><code>filebeat-*</code></td><td>Create the data stream on first write, and add a field it has never seen to the mapping</td></tr>
+</table>
+<p>Create the role and the user from <code>client-01</code>. The name <code>elasticsearch</code> resolves
+on the Docker network, so <code>client-01</code> talks to the cluster directly:</p>
+<pre>ES=http://elasticsearch:9200
+
+curl -u elastic:changeme -X PUT "$ES/_security/role/filebeat_publisher" \
+  -H 'Content-Type: application/json' -d '{
+  "cluster": ["monitor", "read_ilm", "read_pipeline"],
+  "indices": [
+    {
+      "names": ["filebeat-*"],
+      "privileges": ["create_doc", "auto_configure"]
+    }
+  ]
+}'
+
+curl -u elastic:changeme -X PUT "$ES/_security/user/beats" \
+  -H 'Content-Type: application/json' -d '{
+  "password": "cis3370-beats",
+  "roles": ["filebeat_publisher"],
+  "full_name": "Filebeat publisher"
+}'</pre>
+<p>Expected: <code>{"role":{"created":true}}</code>, then <code>{"created":true}</code>. Now prove the
+restriction holds before you rely on it. Each command prints only the HTTP status code:</p>
+<pre>curl -u beats:cis3370-beats "$ES/_security/_authenticate?pretty"
+curl -s -o /dev/null -w "%{http_code}\n" -u beats:cis3370-beats \
+  "$ES/_cluster/health"
+curl -s -o /dev/null -w "%{http_code}\n" -u beats:cis3370-beats \
+  "$ES/nsl-kdd-train/_search"
+curl -s -o /dev/null -w "%{http_code}\n" -u beats:cis3370-beats \
+  "$ES/_security/user"
+curl -s -o /dev/null -w "%{http_code}\n" -u beats:cis3370-beats \
+  -X POST "$ES/lab-probe/_doc" \
+  -H 'Content-Type: application/json' -d '{"x":1}'</pre>
+<table>
+<tr><th>Request</th><th>Status</th><th>Meaning</th></tr>
+<tr><td>Who am I</td><td class="n">200</td><td>The user exists, and the only role it holds is <code>filebeat_publisher</code></td></tr>
+<tr><td>Cluster health</td><td class="n">200</td><td><code>monitor</code> allows it</td></tr>
+<tr><td>Search another index</td><td class="n">403</td><td>It cannot read anything, not even its own data</td></tr>
+<tr><td>List users</td><td class="n">403</td><td>It cannot see or change accounts</td></tr>
+<tr><td>Write outside <code>filebeat-*</code></td><td class="n">403</td><td>It can write only where its role says</td></tr>
+</table>
+<p class="note">The same role can be built in Kibana under <strong>Stack Management &rarr; Security
+&rarr; Roles &rarr; Create role</strong>, and the user under <strong>Users</strong>. The API is used here
+because you can paste it and repeat it exactly.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">4</span>A simple file, read as a stream</h2>
+<p>Start with the simplest thing Filebeat can do: read a file line by line, send every line, then
+keep watching the file and send each new line as it is written. The input that does this is called
+<code>filestream</code>. The file is <code>host-baseline.tsv</code> from Lecture 6: a header and 60 rows,
+one per second of a quiet minute on our lab machine.</p>
+<pre>cd /home/ubuntu/data
+unzip -o cis3370-generate-bundle.zip
+mkdir -p lab
+cp cis3370-generate-bundle/host-baseline.tsv lab/
+wc -l lab/host-baseline.tsv</pre>
+<p>Expected: <code>61 lab/host-baseline.tsv</code>. Keep that number: 61 lines should become 61
+documents.</p>
+<h3>Write the configuration</h3>
+<p>Keep the original file as a reference, then replace it with one that holds only what this lab
+uses:</p>
+<pre>cp /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.yml.original
+
+cat &gt; /etc/filebeat/filebeat.yml &lt;&lt;'EOF'
+filebeat.inputs:
+  - type: filestream
+    id: host-baseline
+    paths:
+      - /home/ubuntu/data/lab/host-baseline.tsv
+    fields:
+      lab: simple-file
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  username: "beats"
+  password: "cis3370-beats"
+EOF</pre>
+<table>
+<tr><th>Setting</th><th>What it does</th></tr>
+<tr><td><code>type: filestream</code></td><td>Read files line by line and keep following them</td></tr>
+<tr><td><code>id: host-baseline</code></td><td>A name for this input. Every filestream input needs its own, because the registry tracks progress by it.</td></tr>
+<tr><td><code>fields.lab</code></td><td>A label stamped on every document from this input, so you can find them later</td></tr>
+<tr><td><code>filebeat.config.modules</code></td><td>Load any module that is switched on in <code>modules.d/</code>. None is yet.</td></tr>
+<tr><td><code>output.elasticsearch</code></td><td>Where to send the data, and as which user</td></tr>
+</table>
+<h3>Test it before you run it</h3>
+<pre>filebeat test config
+filebeat test output</pre>
+<p>Expected: <code>Config OK</code>, then a connection check that ends:</p>
+<pre>  talk to server... OK
+  version: 9.5.3</pre>
+<p>A <code>WARN secure connection disabled</code> line in between is correct. This stack speaks plain
+HTTP, which is fine while nothing leaves your laptop.</p>
+<h3>Run setup, first as the wrong user</h3>
+<p>Run setup as <code>beats</code>, the user in the file, and watch it fail:</p>
+<pre>filebeat setup --index-management</pre>
+<pre>Exiting: ... got 403 from elasticsearch: ... action [cluster:admin/ilm/put] is unauthorized
+for user [beats] with effective roles [filebeat_publisher], this action is granted by the
+cluster privileges [manage_ilm,manage,all]</pre>
+<p>That refusal is the role working. Now run the same command as <code>elastic</code>. The
+<code>-E</code> flags replace the username and password for this one command only, and leave the file
+alone:</p>
+<pre>filebeat setup --index-management \
+  -E output.elasticsearch.username=elastic \
+  -E output.elasticsearch.password=changeme</pre>
+<p>Expected: <code>Index setup finished.</code></p>
+<h3>Start Filebeat and count</h3>
+<pre>nohup filebeat -e &gt; /var/log/filebeat-run.log 2&gt;&amp;1 &amp;</pre>
+<p>Filebeat now runs in the background and writes its own log to
+<code>/var/log/filebeat-run.log</code>. <code>nohup</code> keeps it running after you close the terminal. Wait about 20 seconds, then count. Use <code>elastic</code> for
+this, because <code>beats</code> cannot read:</p>
+<pre>curl -s -u elastic:changeme "$ES/filebeat-*/_count?q=fields.lab:simple-file"</pre>
+<pre>{"count":61,"_shards":{"total":1,"successful":1,"skipped":0,"failed":0}}</pre>
+<p>61 lines in the file, 61 documents in Elasticsearch. Now the streaming part. Add one line to the
+file while Filebeat watches it:</p>
+<pre>echo "client-01 appended this line" &gt;&gt; lab/host-baseline.tsv</pre>
+<p>Filebeat looks for changes every 10 seconds. Count again after about 20 seconds and you get
+<code>"count":62</code>. Nobody restarted anything; the new line was picked up because Filebeat
+remembers where it stopped reading. That memory is the registry.</p>
+<div class="warnbox">
+<p><strong>If the count stays at 0.</strong> When this lab was first written, the role had
+<code>create_doc</code> and not <code>auto_configure</code>. Filebeat connected, read all 61 lines, and
+dropped every one. Its log said only this:</p>
+<pre>Failed to index 61 events in last 10s: events were dropped! Check the event_data log ...</pre>
+<p>The reason was in <code>/var/log/filebeat/filebeat-events-data-*.ndjson</code>, the file Filebeat
+keeps for events it could not deliver:</p>
+<pre>(status=403): action [indices:admin/mapping/auto_put] is unauthorized for user [beats]</pre>
+<p>The field <code>fields.lab</code> was new to Elasticsearch, and adding a new field to the mapping
+needs <code>auto_configure</code>. If this happens to you, fix the role, then make Filebeat forget it
+already read the file, or it will never send those lines again:</p>
+<pre>pkill filebeat
+rm -rf /var/lib/filebeat/registry
+nohup filebeat -e &gt; /var/log/filebeat-run.log 2&gt;&amp;1 &amp;</pre>
+</div>
+<h3>See it in Kibana</h3>
+<ol class="steps-list">
+<li>Open <a href="http://localhost:5601">http://localhost:5601</a> and log in as <code>elastic</code>.</li>
+<li><strong>Stack Management &rarr; Data Views &rarr; Create data view.</strong> Name it
+<code>filebeat</code>, set the index pattern to <code>filebeat-*</code> and the timestamp field to
+<code>@timestamp</code>, then save.</li>
+<li>Open <strong>Discover</strong>, pick <code>filebeat</code>, set the time to <strong>Last 1
+hour</strong>, and search <code>fields.lab : "simple-file"</code>.</li>
+</ol>
+<p>Each document's <code>message</code> is one whole line of the file, tabs and all. Filebeat did not
+split it into columns, and its <code>@timestamp</code> is the moment Filebeat read the line, not the time
+written in the line. Remember both facts for section 6.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">5</span>The system module</h2>
+<p>A module is a packaged answer to the question "how do I read this kind of log?" It knows where the
+files usually live, and it ships an ingest pipeline that splits each line into named fields:
+<code>user.name</code>, <code>source.ip</code>, <code>event.outcome</code>. The system module reads the two
+logs every Linux machine keeps: <code>syslog</code>, for general messages, and <code>auth.log</code>,
+for logins.</p>
+<h3>Give client-01 something to log</h3>
+<p>A container has no logging service and no SSH server, so the two files do not exist yet. Install
+both, and start them by hand. On <code>client-01</code>:</p>
+<pre>apt-get install -y rsyslog openssh-server
+sed -i 's/^module(load="imklog"/#&amp;/' /etc/rsyslog.conf
+rsyslogd
+mkdir -p /run/sshd &amp;&amp; /usr/sbin/sshd
+ls -l /var/log/syslog /var/log/auth.log</pre>
+<p>The <code>sed</code> line switches off the part of rsyslog that reads kernel messages, because a
+container is not allowed to read the kernel's log. Both files should now exist. If <code>ls</code>
+says <code>No such file or directory</code>, rsyslog has not finished starting: wait a second and run
+the <code>ls</code> line again.</p>
+<h3>Enable the module, then configure it</h3>
+<pre>filebeat modules enable system</pre>
+<p>Expected: <code>Enabled system</code>. That renamed <code>modules.d/system.yml.disabled</code> to
+<code>system.yml</code>. Inside it, both parts of the module, called <em>filesets</em>, are still switched
+off. Switch them on and say where the files are:</p>
+<pre>cat &gt; /etc/filebeat/modules.d/system.yml &lt;&lt;'EOF'
+- module: system
+  syslog:
+    enabled: true
+    var.paths: ["/var/log/syslog"]
+  auth:
+    enabled: true
+    var.paths: ["/var/log/auth.log"]
+EOF</pre>
+<h3>Test the module configuration</h3>
+<pre>filebeat test config
+filebeat modules list | head -4</pre>
+<pre>Config OK
+Enabled:
+system
+
+Disabled:</pre>
+<h3>Load the module's pipelines, as elastic</h3>
+<p>The pipelines are part of setup, so <code>beats</code> cannot load them. Load them as
+<code>elastic</code>:</p>
+<pre>filebeat setup --pipelines --modules system --force-enable-module-filesets \
+  -E output.elasticsearch.username=elastic \
+  -E output.elasticsearch.password=changeme</pre>
+<p>Expected: <code>Loaded Ingest pipelines</code>. Without <code>--force-enable-module-filesets</code>
+you get <code>Exiting: module system is configured but has no enabled filesets</code>. That is because
+with <code>--modules</code>, setup ignores the file you just wrote and looks only at the command
+line.</p>
+<p>Restart Filebeat so it loads the module:</p>
+<pre>pkill filebeat
+nohup filebeat -e &gt; /var/log/filebeat-run.log 2&gt;&amp;1 &amp;</pre>
+<div class="warnbox">
+<p><strong>If you started Filebeat before loading the pipelines,</strong> its log repeats
+<code>Failed to connect to backoff(...)</code> together with
+<code>cluster:admin/ingest/pipeline/put is unauthorized for user [beats]</code>. Filebeat tried to
+install a missing pipeline itself and was refused. Load the pipelines as above. Filebeat keeps
+retrying and connects on its own once they exist.</p>
+</div>
+<h3>Make some evidence</h3>
+<p>Write one line to syslog on <code>client-01</code>:</p>
+<pre>logger -t cis3370 "hello from client-01 through syslog"</pre>
+<p>Then try to log in to <code>client-01</code> from the other machine, three times, as three
+different users. In your second terminal:</p>
+<pre>docker compose exec zeek-lab bash</pre>
+<pre>apt-get update
+apt-get install -y openssh-client
+for u in admin root test; do
+  ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+    $u@client-01 true
+done</pre>
+<p>Each attempt prints <code>Permission denied (publickey,password).</code> Back on
+<code>client-01</code>, <code>tail -5 /var/log/auth.log</code> shows what the server wrote about it:</p>
+<pre>... sshd-session[3438]: Invalid user admin from 172.21.0.8 port 40830
+... sshd-session[3438]: Connection closed by invalid user admin 172.21.0.8 port 40830 [preauth]
+... sshd-session[3440]: Connection closed by authenticating user root 172.21.0.8 port 40844 [preauth]
+... sshd-session[3442]: Invalid user test from 172.21.0.8 port 40860
+... sshd-session[3442]: Connection closed by invalid user test 172.21.0.8 port 40860 [preauth]</pre>
+<p>The address is <code>zeek-lab</code>'s on the class stack. Yours will differ.</p>
+<h3>Validate that the data is in Elasticsearch</h3>
+<p>Count documents by where they came from. The field <code>event.dataset</code> names the module and
+fileset:</p>
+<pre>curl -s -u elastic:changeme "$ES/filebeat-*/_search?size=0&amp;pretty" \
+  -H 'Content-Type: application/json' \
+  -d '{"aggs":{"datasets":{"terms":{"field":"event.dataset"}}}}'</pre>
+<p>You should see buckets for <code>system.auth</code> and <code>system.syslog</code>. The 62 documents
+from section 4 have no dataset, so they are not in the list. In <code>system.auth</code>, starting sshd
+adds 2 documents, and each round of three login attempts adds 5. Then ask for the failed logins
+only:</p>
+<pre>curl -s -u elastic:changeme -G "$ES/filebeat-*/_search" -d pretty \
+  -d q=system.auth.ssh.event:Invalid \
+  -d _source=user.name,source.ip,event.outcome</pre>
+<p>Each hit now has fields the raw line did not: <code>user.name</code> is <code>admin</code> or
+<code>test</code>, <code>source.ip</code> is <code>zeek-lab</code>'s address, and
+<code>event.outcome</code> is <code>failure</code>. The pipeline handled the newer OpenSSH name for the
+login process, <code>sshd-session</code>, without any change. In Discover the same search is
+<code>event.dataset : "system.auth" and event.outcome : "failure"</code>.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">6</span>Zeek on zeek-lab: a stream, then a module</h2>
+<p>Now the same exercise on the network side. Zeek reads packets and writes one log line per
+connection, DNS query and TLS handshake. You will run Zeek on the Lecture 6 capture, ship its
+<code>conn.log</code> as raw lines, ship the same logs through Filebeat's Zeek module, and compare the
+two.</p>
+<h3>Install Zeek</h3>
+<p>Ubuntu has no Zeek package of its own. The Zeek project publishes one for Ubuntu 26.04, for both
+processor types. In your <code>zeek-lab</code> terminal:</p>
+<pre>apt-get install -y curl gnupg ca-certificates unzip nano
+REPO=download.opensuse.org/repositories/security:/zeek/xUbuntu_26.04
+echo "deb http://$REPO/ /" &gt; /etc/apt/sources.list.d/zeek.list
+curl -fsSL https://$REPO/Release.key \
+  | gpg --dearmor &gt; /etc/apt/trusted.gpg.d/zeek.gpg
+apt-get update
+apt-get install -y zeek-core
+/opt/zeek/bin/zeek --version</pre>
+<p>Expected: <code>/opt/zeek/bin/zeek version 9.0.1</code>, or a later 9.0 release. <code>zeek-core</code>
+is the analysis engine alone, which is all this lab needs.</p>
+<h3>Install Filebeat on zeek-lab</h3>
+<p>Run the same seven commands as in section 2, starting at <code>apt-get update</code>. The user and the
+role already exist, because they live in Elasticsearch and not on a machine.</p>
+<h3>Turn the capture into Zeek logs</h3>
+<pre>cd /home/ubuntu/data
+unzip -o cis3370-generate-bundle.zip
+mkdir -p zeek-logs &amp;&amp; cd zeek-logs
+/opt/zeek/bin/zeek -C -r ../cis3370-generate-bundle/capture.pcap \
+  LogAscii::use_json=T
+wc -l *.log</pre>
+<pre>  2024 conn.log
+    16 dns.log
+     1 packet_filter.log
+     8 ssl.log</pre>
+<table>
+<tr><th>Part</th><th>Meaning</th></tr>
+<tr><td><code>-r capture.pcap</code></td><td>Read packets from a file instead of a network interface</td></tr>
+<tr><td><code>-C</code></td><td>Ignore checksums. A container's own outgoing packets are captured before the network card fills in the checksum, so without this flag Zeek throws them away as damaged.</td></tr>
+<tr><td><code>LogAscii::use_json=T</code></td><td>Write each record as one JSON object instead of tab-separated text. Filebeat's Zeek module reads JSON only.</td></tr>
+</table>
+<p>Look at one record, and note its <code>uid</code>. You will look this connection up twice:</p>
+<pre>head -1 conn.log</pre>
+<pre>{"ts":1793423385.033747,"uid":"CIUp8t36K7cTo9XKd3","id.orig_h":"172.21.0.5","id.orig_p":48934,
+"id.resp_h":"216.59.63.135","id.resp_p":443,"proto":"tcp","service":"ssl", ... }</pre>
+<p class="note">Zeek makes up a new <code>uid</code> every time it runs, so yours is different. The other
+values are the same, because they come from the packets.</p>
+<h3>Ship conn.log as a stream</h3>
+<p>This is section 4 again, with one addition. Each line is JSON, so a parser called
+<code>ndjson</code> turns the line into fields, and <code>target</code> puts them under one name so they
+cannot collide with anything else:</p>
+<pre>cp /etc/filebeat/filebeat.yml /etc/filebeat/filebeat.yml.original
+
+cat &gt; /etc/filebeat/filebeat.yml &lt;&lt;'EOF'
+filebeat.inputs:
+  - type: filestream
+    id: zeek-conn-raw
+    paths:
+      - /home/ubuntu/data/zeek-logs/conn.log
+    parsers:
+      - ndjson:
+          target: "zeek_raw"
+    fields:
+      lab: zeek-stream
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  username: "beats"
+  password: "cis3370-beats"
+EOF</pre>
+<h3>Enable and configure the Zeek module</h3>
+<pre>filebeat modules enable zeek
+nano /etc/filebeat/modules.d/zeek.yml</pre>
+<p>The file lists 39 filesets, one per Zeek log, all switched off. Change three of them, and write
+the paths exactly as shown. Each fileset reads the bundle's logs now, and the live logs of section 7
+later:</p>
+<pre>  connection:
+    enabled: true
+    var.paths:
+      - /home/ubuntu/data/zeek-logs/conn.log
+      - /home/ubuntu/data/zeek-live/conn.log
+  ...
+  dns:
+    enabled: true
+    var.paths:
+      - /home/ubuntu/data/zeek-logs/dns.log
+      - /home/ubuntu/data/zeek-live/dns.log
+  ...
+  ssl:
+    enabled: true
+    var.paths:
+      - /home/ubuntu/data/zeek-logs/ssl.log
+      - /home/ubuntu/data/zeek-live/ssl.log</pre>
+<p>Save with <strong>Ctrl+O</strong>, then <strong>Enter</strong>, and exit with <strong>Ctrl+X</strong>.
+The Zeek file is called <code>conn.log</code>, but the fileset is called <code>connection</code>. Check
+your edit, then test:</p>
+<pre>grep -A4 -E "^  (connection|dns|ssl):" /etc/filebeat/modules.d/zeek.yml
+filebeat test config
+filebeat test output</pre>
+<p>Load the template and the Zeek pipelines as <code>elastic</code>, then start Filebeat:</p>
+<pre>filebeat setup --index-management --pipelines \
+  --modules zeek --force-enable-module-filesets \
+  -E output.elasticsearch.username=elastic \
+  -E output.elasticsearch.password=changeme
+nohup filebeat -e &gt; /var/log/filebeat-run.log 2&gt;&amp;1 &amp;</pre>
+<p>Expected from setup: <code>Index setup finished.</code> and <code>Loaded Ingest pipelines</code>.</p>
+<h3>Validate: every line arrived, twice</h3>
+<pre>ES=http://elasticsearch:9200
+curl -s -u elastic:changeme "$ES/filebeat-*/_count?q=fields.lab:zeek-stream"
+curl -s -u elastic:changeme "$ES/filebeat-*/_search?size=0&amp;pretty" \
+  -H 'Content-Type: application/json' \
+  -d '{"aggs":{"datasets":{"terms":{"field":"event.dataset"}}}}'</pre>
+<table>
+<tr><th>What</th><th>Lines Zeek wrote</th><th>Documents in Elasticsearch</th></tr>
+<tr><td>Raw stream of <code>conn.log</code></td><td class="n">2,024</td><td class="n">2,024</td></tr>
+<tr><td><code>zeek.connection</code></td><td class="n">2,024</td><td class="n">2,024</td></tr>
+<tr><td><code>zeek.dns</code></td><td class="n">16</td><td class="n">16</td></tr>
+<tr><td><code>zeek.ssl</code></td><td class="n">8</td><td class="n">8</td></tr>
+</table>
+<p>Check every count against <code>wc -l</code>. A missing line is a lost connection, and an IDS that
+quietly loses records is worse than one that is down, because nobody knows to look.</p>
+<h3>Compare the same connection, both ways</h3>
+<p>Put your own <code>uid</code> on the first line:</p>
+<pre>ZUID=CIUp8t36K7cTo9XKd3
+curl -s -u elastic:changeme -G "$ES/filebeat-*/_search" -d pretty \
+  -d q=zeek_raw.uid:$ZUID -d _source=@timestamp,zeek_raw
+curl -s -u elastic:changeme -G "$ES/filebeat-*/_search" -d pretty \
+  -d q=zeek.session_id:$ZUID \
+  -d _source=@timestamp,source,destination,network,zeek.connection
+curl -s -u elastic:changeme -G -d pretty \
+  "$ES/filebeat-*/_mapping/field/zeek_raw.ts,zeek_raw.id.orig_h,source.ip"</pre>
+<table>
+<tr><th>Question</th><th>Raw stream</th><th>Zeek module</th></tr>
+<tr><td>When did it happen?</td><td><code>@timestamp</code> is when Filebeat read the line. The real time is <code>zeek_raw.ts</code>, a plain number of seconds.</td><td><code>@timestamp</code> is the connection's start, taken from <code>ts</code></td></tr>
+<tr><td>Who connected?</td><td><code>zeek_raw.id.orig_h</code>, stored as <code>keyword</code>, which is text</td><td><code>source.ip</code>, stored as <code>ip</code>, so ranges such as <code>172.21.0.0/16</code> work</td></tr>
+<tr><td>Field names</td><td>Zeek's own: <code>id.resp_p</code>, <code>conn_state</code></td><td>ECS, the names every Elastic tool expects: <code>destination.port</code>, <code>zeek.connection.state</code></td></tr>
+<tr><td>Anything added?</td><td>No</td><td>Country and network owner of the outside address (<code>destination.geo</code>, <code>destination.as</code>), a <code>network.community_id</code>, and <code>state_message: "Normal establishment and termination."</code></td></tr>
+</table>
+<p>The module gives you nothing Zeek did not already know. It gives you the same facts under the
+names and types that searching, dashboards and detection rules are built on.</p>
+<h3>Find the scan</h3>
+<p>The bundle's capture holds the minute in which <code>nmap -sT</code> scanned 1,000 ports on each of
+the machine's two addresses. Ask Elasticsearch how the connections ended:</p>
+<pre>curl -s -u elastic:changeme "$ES/filebeat-*/_search?size=0&amp;pretty" \
+  -H 'Content-Type: application/json' -d '{
+  "query": {"term": {"event.dataset": "zeek.connection"}},
+  "aggs": {
+    "state": {"terms": {"field": "zeek.connection.state"}},
+    "span":  {"stats": {"field": "@timestamp"}},
+    "rejected": {
+      "filter": {"term": {"zeek.connection.state": "REJ"}},
+      "aggs": {
+        "ports":   {"cardinality": {"field": "destination.port"}},
+        "targets": {"terms": {"field": "destination.ip"}}
+      }
+    }
+  }
+}'</pre>
+<table>
+<tr><th>Connection state</th><th>Meaning</th><th>Connections</th></tr>
+<tr><td><code>REJ</code></td><td>Asked to connect and was refused straight away</td><td class="n">2,000</td></tr>
+<tr><td><code>SF</code></td><td>Opened and closed normally</td><td class="n">8</td></tr>
+<tr><td><code>S0</code></td><td>Asked to connect and never got an answer</td><td class="n">8</td></tr>
+<tr><td><code>SHR</code></td><td>Zeek saw only the reply side</td><td class="n">8</td></tr>
+</table>
+<p>The 2,000 refused connections hit <strong>1,000 distinct ports</strong>: 1,000 on
+<code>127.0.0.1</code> and 1,000 on <code>172.21.0.5</code>, the two addresses the scan named. Everything
+else in the capture is 24 connections: the eight page loads and the DNS lookups behind them. The whole capture spans 43.7
+seconds, from <code>05:09:45.028</code> to <code>05:10:28.722</code> UTC. To see it in Discover, set an
+absolute time range from the <code>span</code> minimum to its maximum.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">7</span>Zeek, live</h2>
+<p>So far Zeek read a recording. Now it watches <code>zeek-lab</code>'s own network card while
+<code>client-01</code> scans it, and Filebeat ships each record as Zeek writes it. The module already
+lists the <code>zeek-live</code> folder, so nothing in Filebeat changes. When the file appears, Filebeat
+finds it within about 10 seconds. On <code>zeek-lab</code>:</p>
+<pre>mkdir -p /home/ubuntu/data/zeek-live &amp;&amp; cd /home/ubuntu/data/zeek-live
+/opt/zeek/bin/zeek -C -i eth0 LogAscii::use_json=T &gt; zeek.out 2&gt;&amp;1 &amp;
+hostname -i</pre>
+<p><code>-i eth0</code> means listen on the network card. Note the address <code>hostname -i</code> prints.
+On <code>client-01</code>:</p>
+<pre>apt-get install -y nmap
+nmap -sT -p 1-1000 zeek-lab
+hostname -i</pre>
+<pre>Not shown: 1000 closed tcp ports (conn-refused)
+...
+Nmap done: 1 IP address (1 host up) scanned in 0.60 seconds</pre>
+<p>Back on <code>zeek-lab</code>, stop Zeek politely so it writes out everything it is holding, then
+count:</p>
+<pre>pkill -INT zeek
+wc -l conn.log
+cat reporter.log</pre>
+<p>On the class stack: <code>1001 conn.log</code>, and the reporter log said
+<code>2006 packets received on interface eth0, 0 (0.00%) dropped</code>. A capture that drops packets
+misses connections, so check that number every time you capture. Now ask Elasticsearch about the live
+file only:</p>
+<pre>curl -s -u elastic:changeme "$ES/filebeat-*/_search?size=0&amp;pretty" \
+  -H 'Content-Type: application/json' -d '{
+  "query": {"bool": {"filter": [
+    {"term": {"event.dataset": "zeek.connection"}},
+    {"term": {"log.file.path": "/home/ubuntu/data/zeek-live/conn.log"}}
+  ]}},
+  "aggs": {
+    "from":  {"terms": {"field": "source.ip"}},
+    "state": {"terms": {"field": "zeek.connection.state"}},
+    "ports": {"cardinality": {"field": "destination.port"}}
+  }
+}'</pre>
+<p>On the class stack: 1,001 documents. 1,000 came from <code>client-01</code>'s address, all
+<code>REJ</code>, and one record was <code>zeek-lab</code>'s own traffic. That
+is the scan, seen from the target, a few seconds after it happened. The bundle counts do not change:
+Filebeat's registry remembers it already sent those files, so restarting it never sends them
+twice.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">8</span>Take the password out of the file</h2>
+<p><code>filebeat.yml</code> still holds the <code>beats</code> password in plain text. Filebeat has a
+keystore for exactly this. Do it on both machines:</p>
+<pre>filebeat keystore create
+echo -n "cis3370-beats" | filebeat keystore add BEATS_PWD --stdin
+filebeat keystore list
+sed -i 's|password: "cis3370-beats"|password: "${BEATS_PWD}"|' \
+  /etc/filebeat/filebeat.yml
+grep password /etc/filebeat/filebeat.yml
+filebeat test output
+pkill filebeat
+nohup filebeat -e &gt; /var/log/filebeat-run.log 2&gt;&amp;1 &amp;</pre>
+<p>Expected: the list prints <code>BEATS_PWD</code>, the file now says
+<code>password: "${BEATS_PWD}"</code>, and the output test still ends with <code>talk to server...
+OK</code>. A line sent after the restart arrived as normal. The password is still on the machine,
+because Filebeat has to send it. The keystore keeps it out of a file people read, copy and paste
+into tickets.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">9</span>Questions</h2>
+<div class="q"><span class="lab">Question 1</span><p>Setup was refused for <code>beats</code> and worked for
+<code>elastic</code>. Name the privilege each refusal said was missing, and say why a shipper should
+never hold it.</p></div>
+<div class="q"><span class="lab">Question 2</span><p><code>beats</code> cannot read even its own data. An
+attacker owns <code>client-01</code> and has its password. List what they can do to your
+Elasticsearch, and what they cannot.</p></div>
+<div class="q"><span class="lab">Question 3</span><p>The same connection has two different
+<code>@timestamp</code> values in section 6. A detection rule counts refused connections per
+minute. What would it report on the raw stream, and why is that dangerous?</p></div>
+<div class="q"><span class="lab">Question 4</span><p>In <code>auth.log</code>, <code>admin</code> and
+<code>test</code> are "Invalid user" but <code>root</code> is "authenticating user". What did the server
+just tell the person trying to log in, and what does it tell you?</p></div>
+<div class="q"><span class="lab">Question 5</span><p>The bundle shows 2,000 refused connections and the
+live scan shows 1,000, from the same kind of nmap command. Explain the difference using the targets
+each scan named.</p></div>
+<div class="q"><span class="lab">Question 6</span><p>Choose a threshold: how many <code>REJ</code>
+connections from one source within 60 seconds should raise an alert? Use the quiet traffic in the
+same capture, 24 connections, to justify it, and say what kind of scan your threshold
+would miss.</p></div>
+<div class="q"><span class="lab">Question 7</span><p><code>client-01</code> ran the live scan. What did
+<code>client-01</code>'s own <code>syslog</code> and <code>auth.log</code> record about it? What does that
+say about relying on host logs alone?</p></div>
+</section>
+
+<section class="issue">
+<h2><span class="num">10</span>What to hand in</h2>
+<ol class="steps-list">
+<li>The output of the two <code>docker compose ps</code> commands from section 1.</li>
+<li>The status codes from the five checks in section 3.</li>
+<li>One table with your counts: lines in each file, and documents in Elasticsearch, for the simple
+file before and after the append, <code>system.auth</code>, <code>system.syslog</code>, the raw Zeek
+stream, the three Zeek datasets, and the live capture.</li>
+<li>A Discover screenshot of the failed logins from section 5, and one of the refused connections from
+section 7, each with the search visible.</li>
+<li>Your answers to the seven questions, one paragraph each, each with its evidence.</li>
+</ol>
+</section>
+
+<section class="issue">
+<h2><span class="num">11</span>Start over</h2>
+<p>To repeat the lab from a clean cluster, stop Filebeat and clear its registry on both machines:</p>
+<pre>pkill filebeat
+rm -rf /var/lib/filebeat/registry</pre>
+<p>Then remove what the lab created in Elasticsearch, from either machine:</p>
+<pre>ES=http://elasticsearch:9200
+curl -u elastic:changeme -X DELETE "$ES/_data_stream/filebeat-9.5.3"
+curl -u elastic:changeme -X DELETE "$ES/_index_template/filebeat-9.5.3"
+curl -u elastic:changeme -X DELETE "$ES/_ilm/policy/filebeat"
+curl -u elastic:changeme -X DELETE "$ES/_ingest/pipeline/filebeat-9.5.3-*"
+curl -u elastic:changeme -X DELETE "$ES/_security/user/beats"
+curl -u elastic:changeme -X DELETE "$ES/_security/role/filebeat_publisher"</pre>
+<p>The first command deletes every document Filebeat sent. Nothing else in your cluster is touched.</p>
+<h3>Going further, not run in this guide</h3>
+<p>The log bundle from Canvas holds Zeek logs in JSON and Suricata alerts in <code>eve.json</code>.
+Point the Zeek module's <code>var.paths</code> at <code>zeek_json/</code>, or enable the
+<code>suricata</code> module and point its <code>eve</code> fileset at <code>suricata/eve.json</code>. This
+guide did not run either, so report what happened, what you had to change, and whether every line
+arrived.</p>
+</section>
+
+<section class="issue">
+<h2><span class="num">A</span>The class docker-elk compose file</h2>
+<p>This replaces the <code>docker-compose.yml</code> of a docker-elk checkout at commit
+<code>a41b72b</code>, the 9.5.3 release. Clone with <code>git clone
+https://github.com/deviantony/docker-elk.git</code>, run <code>git checkout a41b72b</code>, put this file
+in place, and run <code>mkdir -p zeek-lab/data client-01/data</code> before the first
+<code>docker compose up</code>.</p>
+<pre># The class docker-elk environment in one file.
+#
+# This replaces the docker-compose.yml of a docker-elk checkout at the
+# "Update to v9.5.3" commit (a41b72b). It is docker-elk's own file with two
+# changes: more memory for Elasticsearch and Logstash, and two Ubuntu lab
+# containers, zeek-lab and client-01, on the same network as the stack.
+# The README.md beside this file has the steps.
+
+services:
+
+  # The 'setup' service runs a one-off script which initializes users inside
+  # Elasticsearch, such as 'logstash_internal' and 'kibana_system', with the
+  # values of the passwords defined in the '.env' file. It also creates the
+  # roles required by some of these users.
+  #
+  # This task only needs to be performed once, during the *initial* startup of
+  # the stack. Any subsequent run will reset the passwords of existing users to
+  # the values defined inside the '.env' file, and the built-in roles to their
+  # default permissions.
+  #
+  # By default, it is excluded from the services started by 'docker compose up'
+  # due to the non-default profile it belongs to. To run it, either provide the
+  # '--profile=setup' CLI flag to Compose commands, or "up" the service by name
+  # such as 'docker compose up setup'.
+  setup:
+    profiles:
+      - setup
+    build:
+      context: setup/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    init: true
+    volumes:
+      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
+      - ./setup/lib.sh:/lib.sh:ro,Z
+      - ./setup/roles:/roles:ro,Z
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+      METRICBEAT_INTERNAL_PASSWORD: ${METRICBEAT_INTERNAL_PASSWORD:-}
+      FILEBEAT_INTERNAL_PASSWORD: ${FILEBEAT_INTERNAL_PASSWORD:-}
+      HEARTBEAT_INTERNAL_PASSWORD: ${HEARTBEAT_INTERNAL_PASSWORD:-}
+      MONITORING_INTERNAL_PASSWORD: ${MONITORING_INTERNAL_PASSWORD:-}
+      BEATS_SYSTEM_PASSWORD: ${BEATS_SYSTEM_PASSWORD:-}
+    network_mode: service:elasticsearch
+    depends_on:
+      - elasticsearch
+
+  # The 'kibana-genkeys' service runs a one-off command which generates and
+  # prints encryption keys for Kibana.
+  #
+  # By default, it is excluded from the services started by 'docker compose up'
+  # due to the non-default profile it belongs to. To run it, either provide the
+  # '--profile=setup' CLI flag to Compose commands, or "up" the service by name
+  # such as 'docker compose up kibana-genkeys'.
+  kibana-genkeys:
+    profiles:
+      - setup
+    build:
+      context: kibana/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    command:
+      - bin/kibana-encryption-keys
+      - generate
+    network_mode: none
+
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      node.name: elasticsearch
+      ES_JAVA_OPTS: -Xms2048m -Xmx2048m
+      # Bootstrap password.
+      # Used to initialize the keystore during the initial startup of
+      # Elasticsearch. Ignored on subsequent runs.
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/docs/deploy-manage/deploy/self-managed/bootstrap-checks
+      discovery.type: single-node
+    networks:
+      - elk
+    restart: unless-stopped
+
+  logstash:
+    build:
+      context: logstash/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro,Z
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro,Z
+    ports:
+      - 5044:5044
+      - 50000:50000/tcp
+      - 50000:50000/udp
+      - 9600:9600
+    environment:
+      LS_JAVA_OPTS: -Xms1024m -Xmx1024m
+      LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    ports:
+      - 5601:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Two lab machines on the same 'elk' network as the stack. Both are plain
+  # Ubuntu 26.04 that stay running so you can open a shell in them:
+  #
+  #   docker compose exec zeek-lab bash
+  #   docker compose exec client-01 bash
+  #
+  # Each one mounts a folder from this repository at /home/ubuntu/data, so files
+  # you put there from your computer appear inside the container, and files the
+  # container writes there (captures, logs) appear on your computer. They also
+  # survive 'docker compose down -v', because they are folders, not volumes.
+  #
+  # The other containers reach them by name: 'zeek-lab', 'client-01',
+  # 'elasticsearch', 'logstash', 'kibana'. NET_ADMIN and NET_RAW let tcpdump
+  # capture and nmap send raw packets.
+  zeek-lab:
+    image: ubuntu:26.04
+    hostname: zeek-lab
+    command: sleep infinity
+    init: true
+    working_dir: /home/ubuntu
+    volumes:
+      - ./zeek-lab/data:/home/ubuntu/data:Z
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - elk
+    restart: unless-stopped
+
+  client-01:
+    image: ubuntu:26.04
+    hostname: client-01
+    command: sleep infinity
+    init: true
+    working_dir: /home/ubuntu
+    volumes:
+      - ./client-01/data:/home/ubuntu/data:Z
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - elk
+    restart: unless-stopped
+
+networks:
+  elk:
+    driver: bridge
+
+volumes:
+  elasticsearch:</pre>
+</section>
+
+<p class="note">Every number on this page was produced by running these steps on the class stack:
+Filebeat 9.5.3, Elasticsearch 9.5.3, Zeek 9.0.1, Ubuntu 26.04. Addresses, process numbers and Zeek's
+<code>uid</code> values will differ on your machine. Counts from the bundle should not. If one does,
+say by how much and find out why.</p>
+
+</main>
+<button class="theme-fab" onclick="var r=document.documentElement;var d=r.getAttribute('data-theme')==='dark';r.setAttribute('data-theme',d?'light':'dark')">Toggle theme</button>
+</body>
+</html>
