@@ -4,7 +4,7 @@ University of the Incarnate Word - Dr. Gonzalo D Parra
 
 **Live site:** https://uiwcyber.github.io/cis3370-public/
 
-Students: open the live site above (or **index.html** here). It hosts the course hub, the course outline, the capstone decks (kick-off methodology, presentation days, worked example), and the six fillable capstone forms. Labs, quizzes, and lecture content are delivered through Cengage MindTap via Canvas. Press **p** on any page to download or print it.
+Students: open the live site above (or **index.html** here). It hosts the course hub, the course outline, the capstone decks (kick-off methodology, presentation days, worked example), and the six fillable capstone forms. It also hosts the hands-on Elastic labs, each as a page and a PDF. Quizzes and the MindTap exercises are delivered through Cengage MindTap via Canvas. Press **p** on any page to download or print it.
 
 ## For Claude Code sessions
 
